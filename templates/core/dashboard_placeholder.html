@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% comment %}
+Placeholder landing page for /dashboard/.
+
+This page exists only so the post-login redirect resolves to something real. It
+contains no dashboard functionality — the owner dashboard, medicines, inventory,
+billing, suppliers, customers and analytics all arrive in later iterations.
+{% endcomment %}
+
+{% block title %}Dashboard · {{ PROJECT_NAME }}{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'css/placeholder.css' %}" />
+{% endblock %}
+
+{% block body %}
+<main class="placeholder">
+  <div class="placeholder__card card">
+    <div class="placeholder__brand">
+      <div class="brand">
+        {% include "partials/_logo.html" with mark_id="placeholder" %}
+        <span class="brand__name">Pharma<em>Flow</em>AI</span>
+      </div>
+    </div>
+
+    <p class="placeholder__badge">Signed in</p>
+    <h1 class="placeholder__title">
+      Welcome back, {{ user.display_name }}.
+    </h1>
+    <p class="placeholder__text">
+      Authentication is working. The owner dashboard, medicine catalogue,
+      batch inventory, billing, suppliers, customers and analytics are planned
+      for the next iterations.
+    </p>
+
+    <dl class="placeholder__meta">
+      <div>
+        <dt>Signed in as</dt>
+        <dd>{{ user.get_username }}</dd>
+      </div>
+      <div>
+        <dt>Email</dt>
+        <dd>{{ user.email|default:"—" }}</dd>
+      </div>
+      <div>
+        <dt>Role</dt>
+        <dd>{{ user.get_role_display }}</dd>
+      </div>
+      <div>
+        <dt>Session ends</dt>
+        <dd>{% if request.session.get_expire_at_browser_close %}When the browser closes{% else %}{{ request.session.get_expiry_date|date:"j M Y, H:i" }}{% endif %}</dd>
+      </div>
+    </dl>
+
+    <form method="post" action="{% url 'accounts:logout' %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn--secondary btn--block">Sign out</button>
+    </form>
+  </div>
+</main>
+{% endblock %}

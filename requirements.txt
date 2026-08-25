@@ -1,0 +1,10 @@
+# PharmaFlowAI — Python dependencies
+#
+# Install with:  py -3.13 -m pip install -r requirements.txt
+
+Django==6.1
+python-dotenv==1.1.1
+
+# PostgreSQL driver. Required only when POSTGRES_DB is set in the environment;
+# local development falls back to SQLite without it.
+psycopg[binary]==3.2.10

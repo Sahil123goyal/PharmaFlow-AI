@@ -1,0 +1,33 @@
+{% comment %}
+Decorative healthcare motif for the authentication brand panel: a fine dot
+grid, concentric rings, an outlined capsule and a single vitals line. Purely
+presentational, hidden from assistive technology.
+{% endcomment %}
+<svg class="auth__decor" viewBox="0 0 600 820" preserveAspectRatio="xMidYMid slice"
+     aria-hidden="true" focusable="false">
+  <defs>
+    <pattern id="pfai-dots" width="26" height="26" patternUnits="userSpaceOnUse">
+      <circle cx="1.8" cy="1.8" r="1.8" fill="#ccfbf1" fill-opacity=".14" />
+    </pattern>
+  </defs>
+
+  <rect width="600" height="820" fill="url(#pfai-dots)" />
+
+  <g fill="none" stroke="#5eead4" stroke-opacity=".16" stroke-width="1.5">
+    <circle cx="516" cy="128" r="72" />
+    <circle cx="516" cy="128" r="116" />
+    <circle cx="516" cy="128" r="164" />
+  </g>
+
+  <g fill="none" stroke="#99f6e4" stroke-opacity=".2" stroke-width="2"
+     transform="translate(392 636) rotate(-36)">
+    <rect x="0" y="0" width="156" height="64" rx="32" />
+    <line x1="78" y1="0" x2="78" y2="64" />
+  </g>
+
+  <path d="M62 268h34v-34h30v34h34v30h-34v34H96v-34H62z" fill="#ccfbf1" fill-opacity=".08" />
+
+  <path d="M0 486h118l17-46 23 100 21-54h33l14-21 13 21h361"
+        fill="none" stroke="#5eead4" stroke-opacity=".3" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" />
+</svg>

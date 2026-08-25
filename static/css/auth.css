@@ -1,0 +1,350 @@
+/* ==========================================================================
+   PharmaFlowAI — Authentication screens
+   Two-column layout: a brand panel that carries the pharmacy identity and a
+   form panel that holds the sign-in card. The brand panel collapses on
+   narrower viewports so the form is never pushed below the fold.
+   ========================================================================== */
+
+.auth {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* Single-column auth pages (e.g. password help) — brand panel omitted, the
+   compact lockup carries the identity instead. */
+.auth--single {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.auth--single .auth__panel-brand {
+  display: flex;
+}
+
+/* --------------------------------------------------------------------------
+   Brand panel
+   -------------------------------------------------------------------------- */
+.auth__brand {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  /* Vertical rhythm is viewport-relative so the panel compresses on short
+     laptop screens instead of pushing the page into a scrollbar. */
+  gap: clamp(var(--space-5), 4vh, var(--space-10));
+  padding: clamp(var(--space-6), 5vh, var(--space-12))
+    clamp(var(--space-8), 5vw, var(--space-16));
+  overflow: hidden;
+  color: var(--color-text-inverse);
+  background:
+    radial-gradient(120% 90% at 12% 8%, rgba(45, 212, 191, 0.32), transparent 58%),
+    radial-gradient(90% 80% at 92% 96%, rgba(13, 148, 136, 0.42), transparent 60%),
+    linear-gradient(158deg, var(--teal-800) 0%, var(--teal-900) 48%, var(--teal-950) 100%);
+}
+
+/* Decorative healthcare motif — sits behind all content. */
+.auth__decor {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.auth__brand > *:not(.auth__decor) {
+  position: relative;
+  z-index: 1;
+}
+
+.auth__brand .brand__name {
+  color: var(--color-text-inverse);
+}
+
+.auth__brand .brand__name em {
+  color: var(--teal-300);
+}
+
+.auth__intro {
+  max-width: 30rem;
+}
+
+.auth__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-5);
+  padding: var(--space-1) var(--space-3) var(--space-1) var(--space-2);
+  border: 1px solid rgba(153, 246, 228, 0.28);
+  border-radius: var(--radius-full);
+  background-color: rgba(240, 253, 250, 0.1);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--teal-100);
+}
+
+.auth__eyebrow svg {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+.auth__headline {
+  font-size: clamp(var(--fs-2xl), 3.1vw, var(--fs-3xl));
+  font-weight: var(--fw-bold);
+  letter-spacing: -0.025em;
+}
+
+.auth__subhead {
+  margin-top: var(--space-4);
+  max-width: 26rem;
+  font-size: var(--fs-md);
+  line-height: var(--lh-normal);
+  color: rgba(204, 251, 241, 0.86);
+}
+
+.auth__features {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(var(--space-4), 2.4vh, var(--space-5));
+  margin-top: clamp(var(--space-5), 4vh, var(--space-10));
+}
+
+.auth__feature {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.auth__feature-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex: none;
+  border: 1px solid rgba(153, 246, 228, 0.24);
+  border-radius: var(--radius-md);
+  background-color: rgba(240, 253, 250, 0.12);
+  color: var(--teal-200);
+}
+
+.auth__feature-icon svg {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+.auth__feature-title {
+  font-size: var(--fs-base);
+  font-weight: var(--fw-semibold);
+  color: #fff;
+}
+
+.auth__feature-text {
+  margin-top: 0.125rem;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-snug);
+  color: rgba(204, 251, 241, 0.78);
+}
+
+.auth__brand-footer {
+  font-size: var(--fs-xs);
+  color: rgba(204, 251, 241, 0.62);
+}
+
+/* --------------------------------------------------------------------------
+   Form panel
+   -------------------------------------------------------------------------- */
+.auth__panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-6);
+  padding: var(--space-12) var(--space-6);
+  background-color: var(--color-bg);
+}
+
+/* Compact brand lockup, only shown once the brand panel is hidden. */
+.auth__panel-brand {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  text-align: center;
+}
+
+.auth__panel-tagline {
+  font-size: var(--fs-sm);
+  color: var(--color-text-muted);
+}
+
+.auth__card {
+  width: 100%;
+  max-width: var(--auth-card-width);
+  padding: var(--space-8);
+}
+
+.auth__card-header {
+  margin-bottom: var(--space-6);
+}
+
+.auth__title {
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-bold);
+}
+
+.auth__description {
+  margin-top: var(--space-2);
+  font-size: var(--fs-sm);
+  color: var(--color-text-muted);
+}
+
+/* Vertical rhythm for cards that hold content rather than a form. */
+.auth__card-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+/* --------------------------------------------------------------------------
+   Form
+   -------------------------------------------------------------------------- */
+.auth__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+/* Server-side and client-side messages share this region. */
+.auth__messages {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+/* Collapses completely when there is nothing to report, so the form rhythm
+   is unaffected. Relies on the template rendering the region with no
+   whitespace inside it. */
+.auth__messages:empty {
+  display: none;
+}
+
+.auth__options {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.auth__footnote {
+  margin-top: var(--space-1);
+  font-size: var(--fs-sm);
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+.auth__divider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-1);
+  font-size: var(--fs-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--slate-400);
+}
+
+.auth__divider::before,
+.auth__divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background-color: var(--color-border);
+}
+
+/* Trust strip under the card. */
+.auth__secure-note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  max-width: var(--auth-card-width);
+  font-size: var(--fs-xs);
+  color: var(--color-text-muted);
+}
+
+.auth__secure-note svg {
+  width: 0.875rem;
+  height: 0.875rem;
+  flex: none;
+  color: var(--color-primary);
+}
+
+/* --------------------------------------------------------------------------
+   Tablet — hide the brand panel, keep a compact lockup above the card
+   -------------------------------------------------------------------------- */
+@media (max-width: 63.99em) { /* < 1024px */
+  .auth {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .auth__brand {
+    display: none;
+  }
+
+  .auth__panel {
+    padding: var(--space-10) var(--space-6);
+    background:
+      radial-gradient(130% 55% at 50% -10%, rgba(19, 78, 74, 0.1), transparent 70%),
+      var(--color-bg);
+  }
+
+  .auth__panel-brand {
+    display: flex;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Mobile — edge-to-edge card, tighter rhythm
+   -------------------------------------------------------------------------- */
+@media (max-width: 30rem) { /* <= 480px */
+  .auth__panel {
+    justify-content: flex-start;
+    gap: var(--space-5);
+    padding: var(--space-8) var(--space-4) var(--space-10);
+  }
+
+  .auth__card {
+    padding: var(--space-6) var(--space-5);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+  }
+
+  .auth__options {
+    /* Stack so both targets stay comfortably tappable. */
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+  }
+
+  .brand__mark {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+
+  .brand__name {
+    font-size: var(--fs-lg);
+  }
+}
+
+/* Short landscape viewports (phones turned sideways). */
+@media (max-height: 34rem) and (max-width: 63.99em) {
+  .auth__panel {
+    justify-content: flex-start;
+    padding-top: var(--space-6);
+  }
+}

@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+{% load static form_extras %}
+
+{% block title %}Sign in · {{ PROJECT_NAME }}{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'css/auth.css' %}" />
+{% endblock %}
+
+{% block body %}
+<main class="auth">
+
+  {# ---------------------------------------------------------------- brand #}
+  <aside class="auth__brand">
+    {% include "partials/_auth_decor.html" %}
+
+    <div class="brand">
+      {% include "partials/_logo.html" with mark_id="panel" %}
+      <span class="brand__name">Pharma<em>Flow</em>AI</span>
+    </div>
+
+    <div class="auth__intro">
+      <p class="auth__eyebrow">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 22s8-4.5 8-11V5l-8-3-8 3v6c0 6.5 8 11 8 11z" />
+        </svg>
+        Retail pharmacy operations
+      </p>
+      <h1 class="auth__headline">{{ PROJECT_TAGLINE }}</h1>
+      <p class="auth__subhead">
+        Medicines, batch-level stock, suppliers, billing and customer records —
+        kept in one connected system your counter can actually keep up with.
+      </p>
+
+      <ul class="auth__features">
+        <li class="auth__feature">
+          <span class="auth__feature-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2.7 21 7v10l-9 4.3L3 17V7z" />
+              <path d="M3 7l9 4.3L21 7M12 11.3v10" />
+            </svg>
+          </span>
+          <div>
+            <p class="auth__feature-title">Batch-level inventory</p>
+            <p class="auth__feature-text">
+              Quantity, purchase and selling price, and expiry stay attached to
+              every batch you receive.
+            </p>
+          </div>
+        </li>
+
+        <li class="auth__feature">
+          <span class="auth__feature-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 3a6 6 0 0 0-6 6c0 4-1.6 5.6-2.3 6.3A.9.9 0 0 0 4.3 17h15.4a.9.9 0 0 0 .6-1.7C19.6 14.6 18 13 18 9a6 6 0 0 0-6-6z" />
+              <path d="M9.5 20a2.6 2.6 0 0 0 5 0" />
+            </svg>
+          </span>
+          <div>
+            <p class="auth__feature-title">Low-stock &amp; expiry alerts</p>
+            <p class="auth__feature-text">
+              See what needs reordering and which batches are close to expiring
+              before they cost you money.
+            </p>
+          </div>
+        </li>
+
+        <li class="auth__feature">
+          <span class="auth__feature-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 20V4M4 20h16" />
+              <path d="M8 16v-5M12.5 16V7M17 16v-8" />
+            </svg>
+          </span>
+          <div>
+            <p class="auth__feature-title">Sales &amp; inventory analytics</p>
+            <p class="auth__feature-text">
+              Understand fast-moving medicines, slow stock and daily store
+              performance at a glance.
+            </p>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <p class="auth__brand-footer">
+      {{ PROJECT_NAME }} · Pharmacy retail management · UCS503P
+    </p>
+  </aside>
+
+  {# ------------------------------------------------------------ form panel #}
+  <section class="auth__panel">
+    <div class="auth__panel-brand">
+      <div class="brand">
+        {% include "partials/_logo.html" with mark_id="compact" %}
+        <span class="brand__name">Pharma<em>Flow</em>AI</span>
+      </div>
+      <p class="auth__panel-tagline">{{ PROJECT_TAGLINE }}</p>
+    </div>
+
+    <div class="auth__card card">
+      <header class="auth__card-header">
+        <h2 class="auth__title">Sign in to your pharmacy</h2>
+        <p class="auth__description">
+          Enter your owner credentials to manage today&rsquo;s store operations.
+        </p>
+      </header>
+
+      <form class="auth__form" method="post" action="{% url 'accounts:login' %}"
+            novalidate data-login-form>
+        {% csrf_token %}
+        {# Populated by LoginView when the user was bounced off a protected page. #}
+        {% if next %}<input type="hidden" name="next" value="{{ next }}" />{% endif %}
+
+        {# Single region for server errors, flash messages and client-side validation. #}
+        {# The tags below hug the container so an empty region stays :empty. #}
+        <div class="auth__messages" id="auth-messages" aria-live="assertive" aria-atomic="true" data-messages>{% for message in messages %}
+          <div class="alert alert--{% if message.tags == 'error' %}error{% elif message.tags == 'success' %}success{% elif message.tags == 'warning' %}warning{% else %}info{% endif %}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" />
+              <path d="M12 8v.01M11 12h1v4h1" />
+            </svg>
+            <span>{{ message }}</span>
+          </div>
+        {% endfor %}{% if form.non_field_errors %}
+          <div class="alert alert--error" data-server-error>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M10.3 3.9 2.4 17.3A1.9 1.9 0 0 0 4 20.2h16a1.9 1.9 0 0 0 1.6-2.9L13.7 3.9a1.9 1.9 0 0 0-3.4 0z" />
+              <path d="M12 9v4M12 17h.01" />
+            </svg>
+            <div class="alert__list">{% for error in form.non_field_errors %}<span>{{ error }}</span>{% endfor %}</div>
+          </div>
+        {% endif %}</div>
+
+        {# ------------------------------------------- email / username field #}
+        <div class="field{% if form.username.errors %} field--invalid{% endif %}" data-field>
+          <label class="field__label" for="{{ form.username.id_for_label }}">
+            {{ form.username.label }}
+          </label>
+          <div class="field__control">
+            <span class="field__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"
+                   stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2.8" y="4.6" width="18.4" height="14.8" rx="2.6" />
+                <path d="m3.6 7.2 8.4 5.8 8.4-5.8" />
+              </svg>
+            </span>
+            {{ form.username|input_field }}
+          </div>
+          {# Kept on one line: an all-whitespace paragraph would defeat :empty. #}
+          <p class="field__error" id="{{ form.username.auto_id }}-error" data-field-error>{{ form.username.errors|join:" " }}</p>
+        </div>
+
+        {# ---------------------------------------------------- password field #}
+        <div class="field{% if form.password.errors %} field--invalid{% endif %}" data-field>
+          <label class="field__label" for="{{ form.password.id_for_label }}">
+            {{ form.password.label }}
+          </label>
+          <div class="field__control">
+            <span class="field__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"
+                   stroke-linecap="round" stroke-linejoin="round">
+                <rect x="4.2" y="10.4" width="15.6" height="9.6" rx="2.4" />
+                <path d="M8.2 10.4V7.8a3.8 3.8 0 0 1 7.6 0v2.6" />
+              </svg>
+            </span>
+            {{ form.password|input_field }}
+            <button type="button" class="field__toggle" aria-pressed="false"
+                    aria-label="Show password"
+                    aria-controls="{{ form.password.id_for_label }}"
+                    data-password-toggle>
+              <svg class="icon-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"
+                   aria-hidden="true">
+                <path d="M2.2 12S5.8 5.6 12 5.6 21.8 12 21.8 12 18.2 18.4 12 18.4 2.2 12 2.2 12z" />
+                <circle cx="12" cy="12" r="2.9" />
+              </svg>
+              <svg class="icon-eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"
+                   aria-hidden="true">
+                <path d="M9.6 5.9A9.6 9.6 0 0 1 12 5.6c6.2 0 9.8 6.4 9.8 6.4a17 17 0 0 1-2.6 3.4M6.4 7.4A16.7 16.7 0 0 0 2.2 12S5.8 18.4 12 18.4a9.4 9.4 0 0 0 3.6-.7" />
+                <path d="M10 10a2.9 2.9 0 0 0 4 4M3.5 3.5l17 17" />
+              </svg>
+            </button>
+          </div>
+          <p class="field__error" id="{{ form.password.auto_id }}-error" data-field-error>{{ form.password.errors|join:" " }}</p>
+          <p class="field__error" data-capslock hidden>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 4.6 4.8 11.8h3.6v3.6h7.2v-3.6h3.6z" />
+              <path d="M8.4 19.4h7.2" />
+            </svg>
+            Caps Lock is on.
+          </p>
+        </div>
+
+        {# --------------------------------------------- remember me / forgot #}
+        <div class="auth__options">
+          <label class="checkbox" for="{{ form.remember_me.id_for_label }}">
+            {{ form.remember_me }}
+            <span>{{ form.remember_me.label }}</span>
+          </label>
+          <a class="link" href="{% url 'accounts:password_help' %}">Forgot password?</a>
+        </div>
+
+        <button type="submit" class="btn btn--primary btn--block" data-submit-button>
+          <span class="btn__spinner" aria-hidden="true"></span>
+          <span data-submit-label>Sign in</span>
+        </button>
+      </form>
+
+      <p class="auth__footnote">
+        No account yet? Ask the pharmacy owner to create one for you.
+      </p>
+    </div>
+
+    <p class="auth__secure-note">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="4.5" y="10.6" width="15" height="9.4" rx="2.2" />
+        <path d="M8.4 10.6V7.9a3.6 3.6 0 0 1 7.2 0v2.7" />
+      </svg>
+      Secure session sign-in. Your credentials are never stored in the browser.
+    </p>
+  </section>
+</main>
+{% endblock %}
+
+{% block extra_js %}
+  <script src="{% static 'js/login.js' %}" defer></script>
+{% endblock %}

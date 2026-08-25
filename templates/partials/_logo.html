@@ -1,0 +1,20 @@
+{% comment %}
+PharmaFlowAI logo mark. Pass a unique `mark_id` when the logo appears more than
+once on a page so the gradient definitions keep unique ids:
+
+    {% include "partials/_logo.html" with mark_id="brand" %}
+{% endcomment %}
+<svg class="brand__mark" viewBox="0 0 40 40" role="img" aria-label="{{ PROJECT_NAME }} logo">
+  <defs>
+    <linearGradient id="pfai-mark-{{ mark_id|default:'default' }}" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2dd4bf" />
+      <stop offset=".55" stop-color="#0d9488" />
+      <stop offset="1" stop-color="#115e59" />
+    </linearGradient>
+  </defs>
+  <rect width="40" height="40" rx="11" fill="url(#pfai-mark-{{ mark_id|default:'default' }})" />
+  <ellipse cx="13" cy="7" rx="15" ry="9" fill="#ffffff" fill-opacity=".1" />
+  <path
+    d="M17.6 9.4h4.8a1.6 1.6 0 0 1 1.6 1.6v5.6H29a1.6 1.6 0 0 1 1.6 1.6v4.8A1.6 1.6 0 0 1 29 24.6h-5v5.6a1.6 1.6 0 0 1-1.6 1.6h-4.8a1.6 1.6 0 0 1-1.6-1.6v-5.6h-5a1.6 1.6 0 0 1-1.6-1.6v-4.8a1.6 1.6 0 0 1 1.6-1.6h5V11a1.6 1.6 0 0 1 1.6-1.6z"
+    fill="#ffffff" fill-opacity=".95" />
+</svg>

@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "pharmaflowai",
+      "runtimeExecutable": "py",
+      "runtimeArgs": ["-3.13", "manage.py", "runserver", "8000"],
+      "port": 8000
+    }
+  ]
+}

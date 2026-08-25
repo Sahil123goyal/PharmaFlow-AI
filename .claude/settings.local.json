@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c \"import pypdf; print\\('pypdf ok'\\)\")",
+      "Bash(python -c \"import fitz; print\\('pymupdf ok'\\)\")",
+      "Bash(python -c \"import pdfminer; print\\('pdfminer ok'\\)\")",
+      "Bash(cmd.exe /c \"python --version\")",
+      "Bash(cmd.exe /c \"py --version\")",
+      "Bash(cmd.exe /c \"where python\")",
+      "Bash(cmd //c python --version)",
+      "Bash(cmd //c py -0)",
+      "Bash(py -3.13 -c \"import sys; print\\(sys.version\\); print\\(sys.executable\\)\")",
+      "Bash(py -3.13 -c ' *)",
+      "Bash(py -3.13 -m django --version)",
+      "Bash(py -3.13 -m django startproject config .)",
+      "Bash(py -3.13 manage.py makemigrations accounts)",
+      "Bash(py -3.13 manage.py check)",
+      "Bash(py -3.13 manage.py test apps)",
+      "Bash(py -3.13 manage.py migrate)",
+      "Bash(DJANGO_SUPERUSER_PASSWORD='CounterDesk#2026' py -3.13 manage.py createsuperuser --noinput --username owner --email owner@pharmacy.com)",
+      "Bash(py -3.13 manage.py check --deploy)"
+    ]
+  }
+}
