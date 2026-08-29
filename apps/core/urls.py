@@ -6,5 +6,5 @@ app_name = "core"
 
 urlpatterns = [
     path("", views.RootRedirectView.as_view(), name="root"),
-    path("dashboard/", views.DashboardPlaceholderView.as_view(), name="dashboard"),
+    path("dashboard/", views.DashboardView.as_view(), name="dashboard"),
 ]

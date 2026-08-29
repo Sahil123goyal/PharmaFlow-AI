@@ -1,0 +1,147 @@
+{% extends "base_app.html" %}
+
+{% comment %}
+Owner dashboard. Every figure on this page is a real count from the database —
+nothing is mocked. As modules land they add their own cards here; until then the
+page is honest about what the system does and does not yet hold.
+{% endcomment %}
+
+{% block title %}Dashboard · {{ PROJECT_NAME }}{% endblock %}
+{% block topbar_title %}Dashboard{% endblock %}
+
+{% block page %}
+<header class="page__header">
+  <div>
+    <p class="page__eyebrow">Overview</p>
+    <h1 class="page__title">Welcome back, {{ user.display_name }}.</h1>
+    <p class="page__description">
+      {% if medicine_counts.total %}
+        Your catalogue is set up. Batch inventory, billing and analytics build on
+        top of it as those modules arrive.
+      {% else %}
+        Start by building the medicine catalogue — every other module references it.
+      {% endif %}
+    </p>
+  </div>
+  <div class="page__actions">
+    <a class="btn btn--primary" href="{% url 'medicines:add' %}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12 5v14M5 12h14" />
+      </svg>
+      Add medicine
+    </a>
+  </div>
+</header>
+
+<section class="stat-grid" aria-label="Catalogue summary">
+  <div class="stat-card">
+    <p class="stat-card__label">Medicines</p>
+    <p class="stat-card__value">{{ medicine_counts.total }}</p>
+    <p class="stat-card__meta">
+      <a class="link" href="{% url 'medicines:list' %}?status=all">View catalogue</a>
+    </p>
+  </div>
+  <div class="stat-card">
+    <p class="stat-card__label">Active</p>
+    <p class="stat-card__value">{{ medicine_counts.active }}</p>
+    <p class="stat-card__meta">Available for daily use</p>
+  </div>
+  <div class="stat-card">
+    <p class="stat-card__label">Inactive</p>
+    <p class="stat-card__value">{{ medicine_counts.inactive }}</p>
+    <p class="stat-card__meta">
+      {% if medicine_counts.inactive %}
+        <a class="link" href="{% url 'medicines:list' %}?status=inactive">Review</a>
+      {% else %}
+        Nothing withdrawn
+      {% endif %}
+    </p>
+  </div>
+  <div class="stat-card">
+    <p class="stat-card__label">Categories</p>
+    <p class="stat-card__value">{{ category_count }}</p>
+    <p class="stat-card__meta">Therapeutic groups in use</p>
+  </div>
+</section>
+
+{% if recent_medicines %}
+  <section class="panel">
+    <h2 class="panel__title">Recently added</h2>
+    <p class="panel__description">The last five medicines added to the catalogue.</p>
+
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Medicine</th>
+            <th scope="col">Category</th>
+            <th scope="col">Added</th>
+            <th scope="col">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for medicine in recent_medicines %}
+            <tr {% if not medicine.is_active %}class="is-inactive"{% endif %}>
+              <td class="table__cell--primary">
+                <a class="link" href="{{ medicine.get_absolute_url }}">{{ medicine.label }}</a>
+                {% if medicine.generic_name %}
+                  <span class="table__sub">{{ medicine.generic_name }}</span>
+                {% endif %}
+              </td>
+              <td>{{ medicine.category|default:"—" }}</td>
+              <td>{{ medicine.created_at|date:"j M Y" }}</td>
+              <td>
+                {% if medicine.is_active %}
+                  <span class="badge badge--success">Active</span>
+                {% else %}
+                  <span class="badge badge--muted">Inactive</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+{% endif %}
+
+<section class="panel">
+  <h2 class="panel__title">Signed-in session</h2>
+  <p class="panel__description">
+    Session authentication details for the current sign-in.
+  </p>
+
+  <dl class="data-list">
+    <div>
+      <dt class="data-list__label">Username</dt>
+      <dd class="data-list__value">{{ user.get_username }}</dd>
+    </div>
+    <div>
+      <dt class="data-list__label">Email</dt>
+      <dd class="data-list__value">{{ user.email|default:"—" }}</dd>
+    </div>
+    <div>
+      <dt class="data-list__label">Role</dt>
+      <dd class="data-list__value">{{ user.get_role_display }}</dd>
+    </div>
+    <div>
+      <dt class="data-list__label">Session ends</dt>
+      <dd class="data-list__value">{% if request.session.get_expire_at_browser_close %}When the browser closes{% else %}{{ request.session.get_expiry_date|date:"j M Y, H:i" }}{% endif %}</dd>
+    </div>
+  </dl>
+</section>
+
+<div class="alert alert--info">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+       stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="9" />
+    <path d="M12 8v.01M11 12h1v4h1" />
+  </svg>
+  <span>
+    Stock levels, low-stock and expiry alerts, billing and sales analytics need
+    batch and transaction data. Those modules are marked <strong>Soon</strong> in
+    the sidebar and will populate this dashboard as they are built.
+  </span>
+</div>
+{% endblock %}

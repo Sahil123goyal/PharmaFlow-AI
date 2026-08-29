@@ -1,0 +1,113 @@
+{% extends "base_app.html" %}
+
+{% block title %}{{ medicine.label }} · Medicines · {{ PROJECT_NAME }}{% endblock %}
+{% block topbar_title %}Medicines{% endblock %}
+
+{% block page %}
+<header class="page__header">
+  <div>
+    <a class="page__back" href="{% url 'medicines:list' %}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M14.5 6 8.5 12l6 6" />
+      </svg>
+      Back to catalogue
+    </a>
+    <h1 class="page__title">{{ medicine.label }}</h1>
+    <div class="detail-badges">
+      {% if medicine.is_active %}
+        <span class="badge badge--success">Active</span>
+      {% else %}
+        <span class="badge badge--muted">Inactive</span>
+      {% endif %}
+      {% if medicine.prescription_required %}
+        <span class="badge badge--warning">Prescription only</span>
+      {% else %}
+        <span class="badge badge--muted">Over the counter</span>
+      {% endif %}
+      {% if medicine.category %}
+        <span class="badge badge--info">{{ medicine.category }}</span>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="page__actions">
+    <a class="btn btn--secondary" href="{% url 'medicines:edit' medicine.pk %}">Edit</a>
+    {# Deactivation, never deletion: bills and batches keep pointing at this record. #}
+    <form method="post" action="{% url 'medicines:status' medicine.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn {% if medicine.is_active %}btn--secondary{% else %}btn--primary{% endif %}">
+        {% if medicine.is_active %}Deactivate{% else %}Reactivate{% endif %}
+      </button>
+    </form>
+  </div>
+</header>
+
+<section class="panel">
+  <h2 class="panel__title">Catalogue details</h2>
+  <p class="panel__description">
+    The master record referenced by stock batches and bill lines.
+  </p>
+
+  <dl class="data-list">
+    <div>
+      <dt class="data-list__label">Brand name</dt>
+      <dd class="data-list__value">{{ medicine.name }}</dd>
+    </div>
+    <div>
+      <dt class="data-list__label">Generic name</dt>
+      <dd class="data-list__value">{{ medicine.generic_name|default:"Not recorded" }}</dd>
+    </div>
+    <div>
+      <dt class="data-list__label">Strength</dt>
+      <dd class="data-list__value">{{ medicine.strength|default:"Not recorded" }}</dd>
+    </div>
+    <div>
+      <dt class="data-list__label">Category</dt>
+      <dd class="data-list__value">{{ medicine.category|default:"Uncategorised" }}</dd>
+    </div>
+    <div>
+      <dt class="data-list__label">Manufacturer</dt>
+      <dd class="data-list__value">{{ medicine.manufacturer|default:"Not recorded" }}</dd>
+    </div>
+    <div>
+      <dt class="data-list__label">Sold as</dt>
+      <dd class="data-list__value">{{ medicine.get_unit_display }}</dd>
+    </div>
+  </dl>
+</section>
+
+<section class="panel">
+  <h2 class="panel__title">Record history</h2>
+  <p class="panel__description">
+    Inactive medicines stay on record so past bills and batches still resolve.
+  </p>
+
+  <dl class="data-list">
+    <div>
+      <dt class="data-list__label">Status</dt>
+      <dd class="data-list__value">{{ medicine.status_label }}</dd>
+    </div>
+    <div>
+      <dt class="data-list__label">Added</dt>
+      <dd class="data-list__value">{{ medicine.created_at|date:"j M Y, H:i" }}</dd>
+    </div>
+    <div>
+      <dt class="data-list__label">Last updated</dt>
+      <dd class="data-list__value">{{ medicine.updated_at|date:"j M Y, H:i" }}</dd>
+    </div>
+  </dl>
+</section>
+
+<div class="alert alert--info">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+       stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="9" />
+    <path d="M12 8v.01M11 12h1v4h1" />
+  </svg>
+  <span>
+    Stock quantity, purchase and selling price, and expiry are recorded per batch.
+    Batch inventory is the next module.
+  </span>
+</div>
+{% endblock %}

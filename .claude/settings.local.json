@@ -18,7 +18,13 @@
       "Bash(py -3.13 manage.py test apps)",
       "Bash(py -3.13 manage.py migrate)",
       "Bash(DJANGO_SUPERUSER_PASSWORD='CounterDesk#2026' py -3.13 manage.py createsuperuser --noinput --username owner --email owner@pharmacy.com)",
-      "Bash(py -3.13 manage.py check --deploy)"
+      "Bash(py -3.13 manage.py check --deploy)",
+      "Bash(PYTHONIOENCODING=utf-8 py -3.13 -c ' *)",
+      "Bash(py -3.13 manage.py makemigrations medicines)",
+      "Bash(py -3.13 manage.py test apps.medicines)",
+      "Bash(DJANGO_DEBUG=False DJANGO_SECRET_KEY=x DJANGO_ALLOWED_HOSTS=localhost EMAIL_HOST=localhost py -3.13 manage.py check --deploy)",
+      "Bash(py -3.13 manage.py seed_medicines)",
+      "Bash(py -3.13 -)"
     ]
   }
 }

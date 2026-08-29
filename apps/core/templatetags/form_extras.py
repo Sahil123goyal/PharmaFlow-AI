@@ -18,10 +18,15 @@ def input_field(bound_field):
 
         {{ form.username|input_field }}
 
-    Adds ``aria-describedby`` pointing at the field's error paragraph and
-    ``aria-invalid`` when the bound field failed validation.
+    Adds ``aria-describedby`` pointing at the field's error paragraph — and its hint
+    paragraph when the field has help text — plus ``aria-invalid`` when the bound
+    field failed validation.
     """
-    attrs = {"aria-describedby": f"{bound_field.auto_id}-error"}
+    described_by = [f"{bound_field.auto_id}-error"]
+    if bound_field.help_text:
+        described_by.append(f"{bound_field.auto_id}-hint")
+
+    attrs = {"aria-describedby": " ".join(described_by)}
     if bound_field.errors:
         attrs["aria-invalid"] = "true"
     return bound_field.as_widget(attrs=attrs)

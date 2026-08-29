@@ -118,4 +118,7 @@
 
   /* --- Layout ----------------------------------------------------------- */
   --auth-card-width: 27rem; /* 432px */
+  --app-sidebar-width: 16rem; /* 256px */
+  --app-topbar-height: 4rem; /* 64px */
+  --app-content-width: 78rem; /* max readable width for page content */
 }

@@ -1,0 +1,209 @@
+{% extends "base_app.html" %}
+
+{% comment %}
+Medicine catalogue listing: search, filter, sort and pagination (proposal §7).
+
+Two distinct empty states — an empty catalogue needs a "add your first medicine"
+prompt, a fruitless search needs its filters cleared. Conflating them is the
+usual mistake and it reads as a bug to the user.
+{% endcomment %}
+
+{% block title %}Medicines · {{ PROJECT_NAME }}{% endblock %}
+{% block topbar_title %}Medicines{% endblock %}
+
+{% block page %}
+<header class="page__header">
+  <div>
+    <p class="page__eyebrow">Master data</p>
+    <h1 class="page__title">Medicine catalogue</h1>
+    <p class="page__description">
+      Every medicine the pharmacy stocks or has stocked. Batches, stock levels and
+      billing all reference these records, so keep names and strengths accurate.
+    </p>
+  </div>
+  <div class="page__actions">
+    <a class="btn btn--primary" href="{% url 'medicines:add' %}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12 5v14M5 12h14" />
+      </svg>
+      Add medicine
+    </a>
+  </div>
+</header>
+
+{% if not catalogue_is_empty %}
+  <form class="toolbar" method="get" action="{% url 'medicines:list' %}" role="search">
+    <div class="field toolbar__search">
+      <label class="field__label" for="{{ filter_form.q.id_for_label }}">
+        {{ filter_form.q.label }}
+      </label>
+      <div class="field__control">
+        <span class="field__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"
+               stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="10.6" cy="10.6" r="6.4" />
+            <path d="m15.4 15.4 4.4 4.4" />
+          </svg>
+        </span>
+        {{ filter_form.q }}
+      </div>
+    </div>
+
+    <div class="field toolbar__control">
+      <label class="field__label" for="{{ filter_form.status.id_for_label }}">
+        {{ filter_form.status.label }}
+      </label>
+      {{ filter_form.status }}
+    </div>
+
+    <div class="field toolbar__control">
+      <label class="field__label" for="{{ filter_form.category.id_for_label }}">
+        {{ filter_form.category.label }}
+      </label>
+      {{ filter_form.category }}
+    </div>
+
+    <div class="field toolbar__control">
+      <label class="field__label" for="{{ filter_form.sort.id_for_label }}">
+        {{ filter_form.sort.label }}
+      </label>
+      {{ filter_form.sort }}
+    </div>
+
+    <div class="toolbar__actions">
+      <button type="submit" class="btn btn--primary btn--sm">Apply</button>
+      {% if is_filtered %}
+        <a class="btn btn--ghost btn--sm" href="{% url 'medicines:list' %}">Clear</a>
+      {% endif %}
+    </div>
+  </form>
+{% endif %}
+
+{% if medicines %}
+  <div class="table-wrap">
+    <table class="table">
+      <caption class="visually-hidden">
+        Medicines in the catalogue, {{ total_count }} matching the current filters.
+      </caption>
+      <thead>
+        <tr>
+          <th scope="col">Medicine</th>
+          <th scope="col">Category</th>
+          <th scope="col">Manufacturer</th>
+          <th scope="col">Unit</th>
+          <th scope="col">Sale</th>
+          <th scope="col">Status</th>
+          <th scope="col"><span class="visually-hidden">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for medicine in medicines %}
+          <tr {% if not medicine.is_active %}class="is-inactive"{% endif %}>
+            <td class="table__cell--primary">
+              <a class="link" href="{{ medicine.get_absolute_url }}">{{ medicine.label }}</a>
+              {% if medicine.generic_name %}
+                <span class="table__sub">{{ medicine.generic_name }}</span>
+              {% endif %}
+            </td>
+            <td>{{ medicine.category|default:"—" }}</td>
+            <td>{{ medicine.manufacturer|default:"—" }}</td>
+            <td>{{ medicine.get_unit_display }}</td>
+            <td>
+              {% if medicine.prescription_required %}
+                <span class="badge badge--warning">Prescription</span>
+              {% else %}
+                <span class="badge badge--muted">Over the counter</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if medicine.is_active %}
+                <span class="badge badge--success">Active</span>
+              {% else %}
+                <span class="badge badge--muted">Inactive</span>
+              {% endif %}
+            </td>
+            <td class="table__cell--actions">
+              <span class="table__actions">
+                <a class="btn btn--secondary btn--sm"
+                   href="{% url 'medicines:edit' medicine.pk %}">Edit</a>
+                {# POST, so nothing here changes data on a GET or a crawl. #}
+                <form method="post" action="{% url 'medicines:status' medicine.pk %}">
+                  {% csrf_token %}
+                  <input type="hidden" name="next" value="{{ request.get_full_path }}" />
+                  <button type="submit" class="btn btn--ghost btn--sm">
+                    {% if medicine.is_active %}Deactivate{% else %}Restore{% endif %}
+                  </button>
+                </form>
+              </span>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <nav class="pagination" aria-label="Catalogue pagination">
+    <p class="pagination__status">
+      {% if is_paginated %}
+        Page {{ page_obj.number }} of {{ paginator.num_pages }} ·
+      {% endif %}
+      {{ total_count }} medicine{{ total_count|pluralize }}
+      {% if is_filtered %}matching your filters{% endif %}
+    </p>
+    {% if is_paginated %}
+      <div class="pagination__controls">
+        {% if page_obj.has_previous %}
+          <a class="btn btn--secondary btn--sm"
+             href="{% querystring page=page_obj.previous_page_number %}">Previous</a>
+        {% endif %}
+        {% if page_obj.has_next %}
+          <a class="btn btn--secondary btn--sm"
+             href="{% querystring page=page_obj.next_page_number %}">Next</a>
+        {% endif %}
+      </div>
+    {% endif %}
+  </nav>
+
+{% elif catalogue_is_empty %}
+  <div class="panel">
+    <div class="empty-state">
+      <span class="empty-state__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+             stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2.6" y="8.6" width="18.8" height="6.8" rx="3.4"
+                transform="rotate(-45 12 12)" />
+          <path d="M9.6 9.6l4.8 4.8" />
+        </svg>
+      </span>
+      <p class="empty-state__title">No medicines yet</p>
+      <p class="empty-state__text">
+        The catalogue is the foundation of the system — add the medicines you stock
+        and the rest of the modules will be able to reference them.
+      </p>
+      <a class="btn btn--primary" href="{% url 'medicines:add' %}">Add the first medicine</a>
+    </div>
+  </div>
+
+{% else %}
+  <div class="panel">
+    <div class="empty-state">
+      <span class="empty-state__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+             stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="10.6" cy="10.6" r="6.4" />
+          <path d="m15.4 15.4 4.4 4.4" />
+        </svg>
+      </span>
+      <p class="empty-state__title">No medicines match these filters</p>
+      <p class="empty-state__text">
+        {% if selected.q %}
+          Nothing matched &ldquo;{{ selected.q }}&rdquo;.
+        {% endif %}
+        Try a shorter search term, or clear the filters to see the whole catalogue.
+      </p>
+      <a class="btn btn--secondary" href="{% url 'medicines:list' %}">Clear filters</a>
+    </div>
+  </div>
+{% endif %}
+{% endblock %}

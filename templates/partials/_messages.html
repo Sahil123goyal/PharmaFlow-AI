@@ -1,0 +1,30 @@
+{% comment %}
+Django messages for the application shell.
+
+The tags hug the container so that with no messages the element stays :empty and
+the `.page__messages:empty { display: none }` rule collapses the gap.
+{% endcomment %}
+<div class="page__messages" aria-live="polite" aria-atomic="true">{% for message in messages %}
+  <div class="alert alert--{% if message.tags == 'error' %}error{% elif message.tags == 'success' %}success{% elif message.tags == 'warning' %}warning{% else %}info{% endif %}">
+    {% if message.tags == 'success' %}
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="9" />
+        <path d="m8.2 12.3 2.6 2.6 5-5.4" />
+      </svg>
+    {% elif message.tags == 'error' or message.tags == 'warning' %}
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M10.3 3.9 2.4 17.3A1.9 1.9 0 0 0 4 20.2h16a1.9 1.9 0 0 0 1.6-2.9L13.7 3.9a1.9 1.9 0 0 0-3.4 0z" />
+        <path d="M12 9v4M12 17h.01" />
+      </svg>
+    {% else %}
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="9" />
+        <path d="M12 8v.01M11 12h1v4h1" />
+      </svg>
+    {% endif %}
+    <span>{{ message }}</span>
+  </div>
+{% endfor %}</div>

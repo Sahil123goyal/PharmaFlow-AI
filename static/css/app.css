@@ -1,0 +1,562 @@
+/* ==========================================================================
+   PharmaFlowAI — Application shell
+   The signed-in frame: fixed sidebar navigation, topbar and page container.
+   Every module renders inside {% block page %} of base_app.html, so this file
+   should stay layout-only — module-specific styling belongs with the module.
+   ========================================================================== */
+
+.app {
+  display: grid;
+  grid-template-columns: var(--app-sidebar-width) minmax(0, 1fr);
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* Keyboard users get a way past the navigation. */
+.app__skip {
+  position: absolute;
+  top: var(--space-3);
+  left: var(--space-3);
+  z-index: 60;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-md);
+  color: var(--color-primary);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  text-decoration: none;
+  transform: translateY(-200%);
+  transition: transform var(--duration) var(--ease);
+}
+
+.app__skip:focus {
+  transform: translateY(0);
+}
+
+/* --------------------------------------------------------------------------
+   Sidebar
+   -------------------------------------------------------------------------- */
+.app__sidebar {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  height: 100vh;
+  height: 100dvh;
+  padding: var(--space-6) var(--space-4);
+  overflow-y: auto;
+  color: var(--color-text-inverse);
+  /* Echoes the login brand panel so the product reads as one system. */
+  background:
+    radial-gradient(120% 60% at 10% 0%, rgba(45, 212, 191, 0.22), transparent 60%),
+    linear-gradient(180deg, var(--teal-800) 0%, var(--teal-900) 55%, var(--teal-950) 100%);
+}
+
+.app__sidebar .brand__name {
+  color: var(--color-text-inverse);
+  font-size: var(--fs-lg);
+}
+
+.app__sidebar .brand__name em {
+  color: var(--teal-300);
+}
+
+.app__brand {
+  padding: 0 var(--space-2);
+}
+
+.app__brand .brand__mark {
+  width: 2.125rem;
+  height: 2.125rem;
+}
+
+.app__nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  flex: 1;
+}
+
+.app__nav-heading {
+  padding: 0 var(--space-2);
+  margin-bottom: var(--space-2);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(204, 251, 241, 0.55);
+}
+
+.app__nav-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: var(--fs-base);
+  font-weight: var(--fw-medium);
+  color: rgba(240, 253, 250, 0.82);
+  text-decoration: none;
+  transition: background-color var(--duration-fast) var(--ease),
+    color var(--duration-fast) var(--ease);
+}
+
+.app__nav-item svg {
+  width: 1.125rem;
+  height: 1.125rem;
+  flex: none;
+}
+
+a.app__nav-item:hover {
+  background-color: rgba(240, 253, 250, 0.1);
+  color: #fff;
+}
+
+.app__nav-item.is-active {
+  background-color: rgba(240, 253, 250, 0.16);
+  color: #fff;
+  font-weight: var(--fw-semibold);
+  box-shadow: inset 2px 0 0 var(--teal-300);
+}
+
+/* Modules that are planned but not built. Rendered as a span, never a link, so
+   there is nothing to click and nothing to focus. */
+.app__nav-item--soon {
+  color: rgba(204, 251, 241, 0.42);
+  cursor: default;
+}
+
+.app__nav-soon {
+  margin-left: auto;
+  padding: 0.05rem var(--space-2);
+  border: 1px solid rgba(153, 246, 228, 0.22);
+  border-radius: var(--radius-full);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.02em;
+  color: rgba(204, 251, 241, 0.6);
+}
+
+.app__sidebar-footer {
+  padding: 0 var(--space-2);
+  font-size: var(--fs-xs);
+  line-height: var(--lh-snug);
+  color: rgba(204, 251, 241, 0.5);
+}
+
+/* --------------------------------------------------------------------------
+   Main column
+   -------------------------------------------------------------------------- */
+.app__main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0; /* lets wide tables scroll instead of stretching the grid */
+}
+
+.app__topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  min-height: var(--app-topbar-height);
+  padding: var(--space-3) var(--space-6);
+  background-color: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.app__topbar-title {
+  font-size: var(--fs-md);
+  font-weight: var(--fw-semibold);
+}
+
+.app__topbar-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-left: auto;
+}
+
+.app__user {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--fs-sm);
+}
+
+.app__user-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.125rem;
+  height: 2.125rem;
+  flex: none;
+  border-radius: var(--radius-full);
+  background-color: var(--color-primary-soft);
+  border: 1px solid var(--teal-200);
+  color: var(--color-primary);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-bold);
+  text-transform: uppercase;
+}
+
+.app__user-detail {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.app__user-name {
+  font-weight: var(--fw-semibold);
+}
+
+.app__user-role {
+  font-size: var(--fs-xs);
+  color: var(--color-text-muted);
+}
+
+/* Hamburger — only exists once the sidebar becomes a drawer. */
+.app__nav-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.app__nav-toggle svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.app__backdrop {
+  display: none;
+}
+
+/* --------------------------------------------------------------------------
+   Page container
+   -------------------------------------------------------------------------- */
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  width: 100%;
+  max-width: var(--app-content-width);
+  padding: var(--space-8) var(--space-6) var(--space-12);
+}
+
+.page__header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.page__eyebrow {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.page__title {
+  margin-top: var(--space-1);
+  font-size: var(--fs-2xl);
+  font-weight: var(--fw-bold);
+}
+
+.page__description {
+  margin-top: var(--space-2);
+  max-width: 44rem;
+  font-size: var(--fs-sm);
+  color: var(--color-text-muted);
+}
+
+.page__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.page__messages {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.page__messages:empty {
+  display: none;
+}
+
+/* A bordered surface for page content. Lighter than .card, which is for the
+   elevated auth panel. */
+.panel {
+  padding: var(--space-6);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.panel__title {
+  font-size: var(--fs-md);
+  font-weight: var(--fw-semibold);
+}
+
+.panel__description {
+  margin-top: var(--space-1);
+  font-size: var(--fs-sm);
+  color: var(--color-text-muted);
+}
+
+/* Breadcrumb-style back link above a page title. */
+.page__back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--fs-sm);
+  color: var(--color-text-muted);
+  text-decoration: none;
+}
+
+.page__back:hover {
+  color: var(--color-primary);
+}
+
+.page__back svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* --------------------------------------------------------------------------
+   Page furniture shared by module screens
+   -------------------------------------------------------------------------- */
+
+/* Search / filter / sort bar above a list. A plain GET form, so it works with
+   JavaScript disabled. */
+.toolbar {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  padding: var(--space-4);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.toolbar__search {
+  flex: 1 1 16rem;
+  min-width: 0;
+}
+
+.toolbar__control {
+  flex: 0 1 10.5rem;
+  min-width: 0;
+}
+
+.toolbar__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-left: auto;
+}
+
+/* Summary figures. Real counts only — nothing here is invented. */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: var(--space-4);
+}
+
+.stat-card {
+  padding: var(--space-5);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
+}
+
+.stat-card__label {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.stat-card__value {
+  margin-top: var(--space-2);
+  font-size: var(--fs-3xl);
+  font-weight: var(--fw-bold);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.stat-card__meta {
+  margin-top: var(--space-1);
+  font-size: var(--fs-sm);
+  color: var(--color-text-muted);
+}
+
+/* Label/value pairs on a read-only record. */
+.data-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: var(--space-5);
+  margin: 0;
+}
+
+/* Content that follows a panel heading needs breathing room. */
+.panel__title + .data-list,
+.panel__description + .data-list,
+.panel__title + .table-wrap,
+.panel__description + .table-wrap {
+  margin-top: var(--space-6);
+}
+
+.data-list__label {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.data-list__value {
+  margin: var(--space-1) 0 0;
+  font-size: var(--fs-base);
+  color: var(--color-text);
+  overflow-wrap: anywhere;
+}
+
+/* Two-column form body; a field can claim the full row when it needs the space. */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: var(--space-5);
+}
+
+.form-grid__full {
+  grid-column: 1 / -1;
+}
+
+/* Form-level errors sit above the fields, separated from the first row. */
+.form-alert {
+  margin-bottom: var(--space-5);
+}
+
+.form-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  padding-top: var(--space-5);
+  margin-top: var(--space-6);
+  border-top: 1px solid var(--color-border);
+}
+
+/* Status pills beside a record title. */
+.detail-badges {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  margin-top: var(--space-3);
+}
+
+/* --------------------------------------------------------------------------
+   Tablet and below — sidebar becomes an off-canvas drawer
+   -------------------------------------------------------------------------- */
+@media (max-width: 63.99em) { /* < 1024px, matches auth.css */
+  .app {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .app__sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 50;
+    width: min(17rem, 82vw);
+    height: auto;
+    transform: translateX(-100%);
+    transition: transform var(--duration) var(--ease);
+  }
+
+  .app.is-nav-open .app__sidebar {
+    transform: translateX(0);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .app__nav-toggle {
+    display: inline-flex;
+  }
+
+  .app.is-nav-open .app__backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    background-color: rgba(15, 23, 42, 0.45);
+  }
+
+  .page {
+    padding: var(--space-6) var(--space-5) var(--space-10);
+  }
+}
+
+@media (max-width: 30rem) { /* <= 480px */
+  .app__topbar {
+    padding: var(--space-3) var(--space-4);
+  }
+
+  /* The name is the useful part on a narrow bar; the role is not. */
+  .app__user-detail {
+    display: none;
+  }
+
+  .page {
+    padding: var(--space-5) var(--space-4) var(--space-10);
+    gap: var(--space-5);
+  }
+
+  .page__title {
+    font-size: var(--fs-xl);
+  }
+
+  /* Let the filters stack into two readable rows instead of squeezing. */
+  .toolbar__control {
+    flex: 1 1 45%;
+  }
+
+  .toolbar__actions {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .toolbar__actions .btn {
+    flex: 1;
+  }
+}
+
+/* The drawer transition is the only movement here; honour the OS preference. */
+@media (prefers-reduced-motion: reduce) {
+  .app__sidebar,
+  .app__skip {
+    transition: none;
+  }
+}

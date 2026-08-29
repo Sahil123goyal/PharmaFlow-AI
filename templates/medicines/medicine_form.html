@@ -1,0 +1,79 @@
+{% extends "base_app.html" %}
+
+{% comment %}
+Shared by the create and update views. The page title, submit label and cancel
+target are the only differences, and they come from the view context.
+{% endcomment %}
+
+{% block title %}{{ page_title }} · {{ PROJECT_NAME }}{% endblock %}
+{% block topbar_title %}{{ page_title }}{% endblock %}
+
+{% block page %}
+<header class="page__header">
+  <div>
+    <a class="page__back"
+       href="{% if object %}{{ object.get_absolute_url }}{% else %}{% url 'medicines:list' %}{% endif %}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M14.5 6 8.5 12l6 6" />
+      </svg>
+      {% if object %}Back to {{ object.label }}{% else %}Back to catalogue{% endif %}
+    </a>
+    <h1 class="page__title">{{ page_title }}</h1>
+    <p class="page__description">
+      Only the name is required. Filling in generic name, strength and manufacturer
+      now saves time later — billing and stock screens all read from these fields.
+    </p>
+  </div>
+</header>
+
+<div class="panel">
+  <form method="post"
+        action="{% if object %}{% url 'medicines:edit' object.pk %}{% else %}{% url 'medicines:add' %}{% endif %}">
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+      <div class="alert alert--error form-alert">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M10.3 3.9 2.4 17.3A1.9 1.9 0 0 0 4 20.2h16a1.9 1.9 0 0 0 1.6-2.9L13.7 3.9a1.9 1.9 0 0 0-3.4 0z" />
+          <path d="M12 9v4M12 17h.01" />
+        </svg>
+        <div class="alert__list">
+          {% for error in form.non_field_errors %}<span>{{ error }}</span>{% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+    <div class="form-grid">
+      {% include "partials/_field.html" with field=form.name %}
+      {% include "partials/_field.html" with field=form.generic_name %}
+      {% include "partials/_field.html" with field=form.strength %}
+      {% include "partials/_field.html" with field=form.category %}
+      {% include "partials/_field.html" with field=form.manufacturer %}
+      {% include "partials/_field.html" with field=form.unit %}
+
+      <div class="form-grid__full">
+        {% include "partials/_field.html" with field=form.prescription_required %}
+      </div>
+      <div class="form-grid__full">
+        {% include "partials/_field.html" with field=form.is_active %}
+      </div>
+    </div>
+
+    {# Autocomplete source for the category field, built from categories already
+       in use. Free text is still accepted — this only reduces spelling drift. #}
+    <datalist id="category-options">
+      {% for category in categories %}<option value="{{ category }}"></option>{% endfor %}
+    </datalist>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn--primary">{{ submit_label }}</button>
+      <a class="btn btn--secondary"
+         href="{% if object %}{{ object.get_absolute_url }}{% else %}{% url 'medicines:list' %}{% endif %}">
+        Cancel
+      </a>
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% comment %}
+The signed-in application shell: sidebar navigation, topbar, messages region and
+a page container. Every module template from here on extends this file and fills
+{% block page %}.
+
+Authentication screens deliberately extend base.html directly — they have no
+navigation, so they must not inherit this frame.
+{% endcomment %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'css/app.css' %}" />
+  {% block page_css %}{% endblock %}
+{% endblock %}
+
+{% block body %}
+<a class="app__skip" href="#main">Skip to main content</a>
+
+<div class="app" data-app>
+  {% include "partials/_sidebar.html" %}
+
+  {# Closes the mobile drawer on tap. Display:none until the drawer is open. #}
+  <div class="app__backdrop" data-nav-backdrop></div>
+
+  <div class="app__main">
+    <header class="app__topbar">
+      <button type="button" class="app__nav-toggle" aria-expanded="false"
+              aria-controls="app-nav" aria-label="Open navigation" data-nav-toggle>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M4 7h16M4 12h16M4 17h16" />
+        </svg>
+      </button>
+
+      <p class="app__topbar-title">{% block topbar_title %}{% endblock %}</p>
+
+      <div class="app__topbar-meta">
+        <div class="app__user">
+          <span class="app__user-avatar" aria-hidden="true">{{ user.display_name|first }}</span>
+          <span class="app__user-detail">
+            <span class="app__user-name">{{ user.display_name }}</span>
+            <span class="app__user-role">{{ user.get_role_display }}</span>
+          </span>
+        </div>
+
+        <form method="post" action="{% url 'accounts:logout' %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn--secondary btn--sm">Sign out</button>
+        </form>
+      </div>
+    </header>
+
+    <main class="page" id="main">
+      {% include "partials/_messages.html" %}
+      {% block page %}{% endblock %}
+    </main>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+  <script src="{% static 'js/app.js' %}" defer></script>
+  {% block page_js %}{% endblock %}
+{% endblock %}

@@ -1,0 +1,27 @@
+{% load form_extras %}{% comment %}
+Generic bound-field renderer. Usage:
+
+    {% include "partials/_field.html" with field=form.name %}
+
+Checkbox widgets need the control inside the label, so they take a separate branch.
+Everything else gets label / control / hint / error in that order.
+
+The error paragraph is written on one line: an all-whitespace <p> would defeat the
+`.field__error:not(:empty)` rule in base.css and leave a permanent gap.
+{% endcomment %}{% if field.field.widget.input_type == 'checkbox' %}
+<div class="field{% if field.errors %} field--invalid{% endif %}">
+  <label class="checkbox" for="{{ field.id_for_label }}">
+    {{ field|input_field }}
+    <span>{{ field.label }}</span>
+  </label>
+  {% if field.help_text %}<p class="field__hint" id="{{ field.auto_id }}-hint">{{ field.help_text }}</p>{% endif %}
+  <p class="field__error" id="{{ field.auto_id }}-error">{{ field.errors|join:" " }}</p>
+</div>
+{% else %}
+<div class="field{% if field.errors %} field--invalid{% endif %}">
+  <label class="field__label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+  <div class="field__control">{{ field|input_field }}</div>
+  {% if field.help_text %}<p class="field__hint" id="{{ field.auto_id }}-hint">{{ field.help_text }}</p>{% endif %}
+  <p class="field__error" id="{{ field.auto_id }}-error">{{ field.errors|join:" " }}</p>
+</div>
+{% endif %}

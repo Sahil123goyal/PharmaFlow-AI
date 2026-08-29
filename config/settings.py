@@ -79,11 +79,12 @@ DJANGO_APPS = [
     "django.contrib.staticfiles",
 ]
 
-# PharmaFlowAI modules. Future iterations add medicines, inventory, suppliers,
-# customers, billing and analytics apps here.
+# PharmaFlowAI modules. Future iterations add inventory, suppliers, customers,
+# billing and analytics apps here.
 LOCAL_APPS = [
     "apps.core",
     "apps.accounts",
+    "apps.medicines",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + LOCAL_APPS
