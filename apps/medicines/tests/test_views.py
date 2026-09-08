@@ -134,11 +134,11 @@ class ListViewTests(SignedInTestCase):
         self.assertFalse(response.context["catalogue_is_empty"])
         self.assertContains(response, "No medicines match these filters")
 
-    def test_sidebar_renders_unbuilt_modules_as_non_links(self):
+    def test_sidebar_links_to_prototype_modules(self):
         content = self.client.get(self.url).content.decode()
-        # Inventory, Billing, Suppliers, Customers and Analytics are not built yet.
-        self.assertEqual(content.count("app__nav-item--soon"), 5)
-        self.assertIn('class="app__nav-soon">Soon<', content)
+        for module in ("inventory", "billing", "suppliers", "customers", "analytics"):
+            self.assertIn(reverse("core:module", kwargs={"module": module}), content)
+        self.assertNotIn("app__nav-item--soon", content)
 
 
 class PaginationTests(SignedInTestCase):

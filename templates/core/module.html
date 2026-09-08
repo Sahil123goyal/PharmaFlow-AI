@@ -1,0 +1,118 @@
+{% extends "base_app.html" %}
+{% load form_extras %}
+
+{% block title %}{{ module.label }} · {{ PROJECT_NAME }}{% endblock %}
+{% block topbar_title %}{{ module.label }}{% endblock %}
+
+{% block page %}
+<header class="page__header">
+  <div>
+    <p class="page__eyebrow">Owner workspace</p>
+    <h1 class="page__title">{{ module.label }}</h1>
+    <p class="page__description">{{ module.description }}</p>
+  </div>
+  <div class="page__actions">
+    <button class="btn btn--secondary" type="button" data-export-table>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14" /></svg>
+      Export view
+    </button>
+    {% if not module.read_only %}
+      <a class="btn btn--primary" href="?add=1#module-form">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+        Add record
+      </a>
+    {% endif %}
+  </div>
+</header>
+
+<section class="stat-grid" aria-label="{{ module.label }} summary">
+  <div class="stat-card">
+    <p class="stat-card__label">{{ module_summary.total_label }}</p>
+    <p class="stat-card__value">{{ module_summary.total }}</p>
+    <p class="stat-card__meta">In this prototype view</p>
+  </div>
+  <div class="stat-card">
+    <p class="stat-card__label">{{ module_summary.attention_label }}</p>
+    <p class="stat-card__value">{{ module_summary.attention }}</p>
+    <p class="stat-card__meta">Updated for this session</p>
+  </div>
+</section>
+
+{% if show_form %}
+  <section class="panel" id="module-form">
+    <div class="panel__heading-row">
+      <div>
+        <h2 class="panel__title">{% if editing %}Edit record{% else %}Add record{% endif %}</h2>
+        <p class="panel__description">Changes are saved for this browser session.</p>
+      </div>
+      <a class="btn btn--ghost btn--sm" href="{% url 'core:module' module=module_slug %}">Cancel</a>
+    </div>
+
+    <form method="post" action="{% url 'core:module_save' module=module_slug %}" class="module-form">
+      {% csrf_token %}
+      <input type="hidden" name="record_id" value="{{ form_values.id|default:'' }}" />
+      <div class="form-grid">
+        {% for field in module.fields %}
+          <div class="field">
+            <label class="field__label" for="module-{{ field.key }}">{{ field.label }}</label>
+            <input class="module-form__input" id="module-{{ field.key }}" name="{{ field.key }}"
+                   type="{{ field.input_type|default:'text' }}" placeholder="{{ field.placeholder }}"
+                   value="{{ form_values|get_item:field.key|default:'' }}" required />
+          </div>
+        {% endfor %}
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn--primary">{% if editing %}Save changes{% else %}Add record{% endif %}</button>
+        <a class="btn btn--secondary" href="{% url 'core:module' module=module_slug %}">Cancel</a>
+      </div>
+    </form>
+  </section>
+{% endif %}
+
+<section class="panel">
+  <div class="panel__heading-row">
+    <div>
+      <h2 class="panel__title">{{ module.label }} records</h2>
+      <p class="panel__description">Search the current view or use row actions to keep the demo data tidy.</p>
+    </div>
+    <label class="module-search">
+      <span class="sr-only">Search {{ module.label }}</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-4-4" /></svg>
+      <input type="search" placeholder="Search records" data-table-search />
+    </label>
+  </div>
+
+  <div class="table-wrap">
+    <table class="table" data-module-table>
+      <thead>
+        <tr>
+          {% for column in module_columns %}<th scope="col">{{ column.label }}</th>{% endfor %}
+          {% if not module.read_only %}<th scope="col"><span class="sr-only">Actions</span></th>{% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in module_rows %}
+          <tr data-table-row>
+            {% for cell in row.cells %}
+              <td{% if forloop.first %} class="table__cell--primary"{% endif %}>{{ cell }}</td>
+            {% endfor %}
+            {% if not module.read_only %}
+              <td class="table__actions">
+                <a class="btn btn--ghost btn--sm" href="?edit={{ row.id }}#module-form">Edit</a>
+                <form method="post" action="{% url 'core:module_delete' module=module_slug %}">
+                  {% csrf_token %}
+                  <input type="hidden" name="record_id" value="{{ row.id }}" />
+                  <button class="btn btn--ghost btn--sm btn--danger" type="submit">Delete</button>
+                </form>
+              </td>
+            {% endif %}
+          </tr>
+        {% empty %}
+          <tr><td class="table__empty" colspan="{{ module_column_count }}">No records yet. Add one to start the demo.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <p class="module-empty" data-table-empty hidden>No matching records.</p>
+  </div>
+</section>
+{% endblock %}

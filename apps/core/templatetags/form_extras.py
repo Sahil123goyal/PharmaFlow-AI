@@ -11,6 +11,14 @@ register = template.Library()
 
 
 @register.filter
+def get_item(mapping, key):
+    """Read a value from a small dictionary in a dynamic prototype form."""
+    if not mapping:
+        return ""
+    return mapping.get(key, "")
+
+
+@register.filter
 def input_field(bound_field):
     """Render a form widget with error-aware ARIA attributes.
 

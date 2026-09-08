@@ -58,6 +58,33 @@ navigation, so they must not inherit this frame.
     </main>
   </div>
 </div>
+
+<section class="chatbot" data-chatbot data-chat-endpoint="{% url 'core:chat' %}">
+  <button class="chatbot__launcher" type="button" aria-expanded="false" aria-controls="chatbot-panel" data-chat-toggle>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5 7.8 7.8 0 0 1-3.6-.9L4 19l1.4-4.1A7.5 7.5 0 1 1 20 11.5Z" /><path d="M8.5 11.5h.01M12 11.5h.01M15.5 11.5h.01" /></svg>
+    <span>Ask PharmaFlow</span>
+  </button>
+
+  <div class="chatbot__panel" id="chatbot-panel" hidden>
+    <div class="chatbot__header">
+      <div>
+        <p class="chatbot__eyebrow">PharmaFlow assistant</p>
+        <h2 class="chatbot__title">Quick answers for your pharmacy</h2>
+      </div>
+      <button class="icon-button" type="button" aria-label="Close assistant" data-chat-close>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg>
+      </button>
+    </div>
+    <div class="chatbot__messages" aria-live="polite" data-chat-messages></div>
+    <form class="chatbot__form" data-chat-form>
+      <label class="sr-only" for="chatbot-input">Message the assistant</label>
+      <input class="chatbot__input" id="chatbot-input" name="message" placeholder="Ask about stock or sales" autocomplete="off" required data-chat-input />
+      <button class="btn btn--primary btn--sm" type="submit" aria-label="Send message" data-chat-send>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 4 16 8-16 8 3-8-3-8Z" /><path d="M7 12h13" /></svg>
+      </button>
+    </form>
+  </div>
+</section>
 {% endblock %}
 
 {% block extra_js %}

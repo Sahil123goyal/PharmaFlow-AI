@@ -16,8 +16,8 @@ page is honest about what the system does and does not yet hold.
     <h1 class="page__title">Welcome back, {{ user.display_name }}.</h1>
     <p class="page__description">
       {% if medicine_counts.total %}
-        Your catalogue is set up. Batch inventory, billing and analytics build on
-        top of it as those modules arrive.
+      Your catalogue is set up. Use the operational modules below to keep a demo
+        view of stock, billing, partners and customers in one place.
       {% else %}
         Start by building the medicine catalogue — every other module references it.
       {% endif %}
@@ -107,6 +107,29 @@ page is honest about what the system does and does not yet hold.
 {% endif %}
 
 <section class="panel">
+  <div class="panel__heading-row">
+    <div>
+      <h2 class="panel__title">Operational workspace</h2>
+      <p class="panel__description">Jump into a module to review sample data or try its basic actions.</p>
+    </div>
+  </div>
+  <div class="module-card-grid">
+    {% for card in module_cards %}
+      <a class="module-card" href="{% url 'core:module' module=card.slug %}">
+        <span class="module-card__icon" aria-hidden="true">
+          {% if card.slug == 'inventory' %}I{% elif card.slug == 'billing' %}B{% elif card.slug == 'suppliers' %}S{% elif card.slug == 'customers' %}C{% else %}A{% endif %}
+        </span>
+        <span class="module-card__body">
+          <span class="module-card__title">{{ card.label }}</span>
+          <span class="module-card__description">{{ card.description }}</span>
+          <span class="module-card__meta">{{ card.count }} sample records <span aria-hidden="true">&gt;</span></span>
+        </span>
+      </a>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="panel">
   <h2 class="panel__title">Signed-in session</h2>
   <p class="panel__description">
     Session authentication details for the current sign-in.
@@ -139,9 +162,9 @@ page is honest about what the system does and does not yet hold.
     <path d="M12 8v.01M11 12h1v4h1" />
   </svg>
   <span>
-    Stock levels, low-stock and expiry alerts, billing and sales analytics need
-    batch and transaction data. Those modules are marked <strong>Soon</strong> in
-    the sidebar and will populate this dashboard as they are built.
+    The non-catalogue modules use session-backed sample data for this prototype.
+    Add, edit and delete actions stay in this browser session and are ready to be
+    replaced with database-backed models when the workflow is finalized.
   </span>
 </div>
 {% endblock %}
