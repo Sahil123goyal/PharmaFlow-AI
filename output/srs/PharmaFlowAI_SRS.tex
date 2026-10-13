@@ -32,7 +32,7 @@ Ridhmann & 1024240059
 \end{tabular}}
 \newcommand{\Institution}{Thapar Institute of Engineering and Technology}
 \newcommand{\Department}{AIML}
-\newcommand{\Supervisor}{[Supervisor name and designation]}
+\newcommand{\Supervisor}{Anushka maam}
 \newcommand{\Course}{UCS503 --- Software Engineering}
 \newcommand{\SubmissionDate}{}
 \newcommand{\BaselineDate}{12 October 2026}
@@ -60,6 +60,9 @@ Ridhmann & 1024240059
 \tikzset{
   box/.style={draw,rounded corners=2pt,align=center,font=\small,text width=30mm,minimum height=12mm,inner sep=4pt},
   process/.style={box,rounded corners=7pt},
+  dfdprocess/.style={circle,draw,align=center,font=\small,text width=26mm,minimum size=38mm,inner sep=2pt},
+  dfdentity/.style={draw,rectangle,align=center,font=\small,text width=29mm,minimum height=14mm,inner sep=4pt},
+  dfdstore/.style={draw,double,rectangle,align=center,font=\small,text width=29mm,minimum height=14mm,inner sep=4pt},
   store/.style={draw,double,align=center,font=\small,text width=34mm,minimum height=12mm,inner sep=4pt},
   flow/.style={-{Stealth[length=2mm]},thick},
   note/.style={font=\scriptsize,align=center,fill=white,inner sep=2pt},
@@ -206,40 +209,63 @@ The context diagram treats browser speech services as an external dependency. Th
 
 \begin{figure}[H]
 \centering
-\begin{tikzpicture}[node distance=16mm and 20mm]
-\node[process,text width=43mm,minimum height=20mm] (system) {0. \Project\\Web application};
-\node[box,left=of system] (staff) {Signed-in\\user};
-\node[box,right=of system] (speech) {Browser speech\\service};
-\node[box,below=18mm of system,text width=43mm] (files) {Report reader /\\browser print destination};
-\draw[flow] (staff.north east)--node[note,above]{credentials, forms,\\questions}(system.north west);
-\draw[flow] (system.south west)--node[note,below]{pages, results,\\replies}(staff.south east);
-\draw[flow] (system.north east)--node[note,above]{voice input /\\reply text}(speech.north west);
-\draw[flow] (speech.south west)--node[note,below]{transcript /\\spoken output}(system.south east);
-\draw[flow] (system)--node[note,right]{CSV / printable report}(files);
+\begin{tikzpicture}
+\node[dfdprocess,text width=33mm,minimum size=48mm] (system) at (0,0) {0. \Project\\Pharmacy management system};
+\node[dfdentity] (staff) at (-5.5,0) {Owner/Pharmacist};
+\node[dfdentity] (speech) at (5.5,0) {Browser speech service};
+\node[dfdentity,text width=38mm] (customer) at (0,4.2) {Customer\\Assisted, signed-in use};
+\node[dfdentity,text width=38mm] (files) at (0,-4.2) {Report reader / browser print destination};
+\draw[flow] (staff.north east)--node[note,above,sloped]{credentials, medicine forms,\\supplier/customer details}(system.150);
+\draw[flow] (system.210)--node[note,below,sloped]{session status, catalogue,\\saved-record feedback}(staff.south east);
+\draw[flow] (system.30)--node[note,above,sloped]{microphone audio /\\reply text and language}(speech.north west);
+\draw[flow] (speech.south west)--node[note,below,sloped]{recognized transcript /\\spoken reply}(system.330);
+\draw[flow] (customer.south west)--node[note,left]{medicine question,\\selected language}(system.120);
+\draw[flow] (system.60)--node[note,right]{catalogue answer,\\prescription flag, fallback}(customer.south east);
+\draw[flow] (system.south)--node[note,right]{catalogue CSV, summary,\\printable medicine list}(files.north);
 \end{tikzpicture}
-\caption{DFD Level 0: external interactions. Speech-service interactions occur in the browser component of the application.}
+\caption{DFD Level 0: system context with labeled inputs and outputs. Customer access is assisted within an authenticated session; suppliers are represented through details entered by the Owner/Pharmacist. Speech processing is a browser interaction, not an audio upload to Django.}
 \end{figure}
 
 \begin{figure}[H]
 \centering
-\begin{tikzpicture}[node distance=12mm and 28mm]
-\node[process] (auth) {1. Authenticate\\and manage session};
-\node[store,right=of auth] (users) {D1: User and\\Django session data};
-\node[process,below=of auth] (catalogue) {2. Maintain /\\query catalogue};
-\node[store,right=of catalogue] (meds) {D2: Medicine\\records};
-\node[process,below=of catalogue] (report) {3. Summarize /\\export catalogue};
-\node[process,right=of report] (assistant) {4. Classify text /\\answer from catalogue};
-\node[process,below=of report] (demo) {5. Edit prototype\\module records};
-\node[store,right=of demo] (session) {D1 session payload:\\\texttt{prototype\_modules}};
-\draw[flow] (auth)--node[note,above]{user check / session write}(users);
-\draw[flow] (catalogue)--node[note,above]{read / create / update}(meds);
-\draw[flow] (meds.south west)--(report.north east);
-\draw[flow] (meds)--node[note,right]{read}(assistant);
-\draw[flow] (assistant)--node[note,above]{report intent}(report);
-\draw[flow] (demo)--node[note,above]{read / write}(session);
-\draw[dashed] (users.east) -- ++(13mm,0) |- (session.east);
+\begin{tikzpicture}
+\node[dfdprocess] (auth) at (0,0) {1. Validate login and manage session};
+\node[dfdentity] (staff1) at (-5.5,0) {Owner/Pharmacist};
+\node[dfdstore] (users) at (5.5,0) {D1: User accounts and Django sessions};
+\node[dfdprocess] (catalogue) at (0,-3.9) {2. Search and maintain medicine catalogue};
+\node[dfdentity] (staff2) at (-5.5,-3.9) {Owner/Pharmacist};
+\node[dfdstore] (meds1) at (5.5,-3.9) {D2: Medicine records};
+\node[dfdprocess] (report) at (0,-7.8) {3. Summarize catalogue and generate reports};
+\node[dfdentity] (reader) at (-5.5,-7.8) {Owner/Pharmacist\\Report reader};
+\node[dfdstore] (meds2) at (5.5,-7.8) {D2: Medicine records\\(same store)};
+\node[dfdprocess] (assistant) at (0,-11.7) {4. Classify question and build catalogue reply};
+\node[dfdentity] (questioner) at (-5.5,-11.7) {Owner/Pharmacist or assisted Customer};
+\node[dfdstore] (meds3) at (5.5,-11.7) {D2: Medicine records\\(same store)};
+\node[dfdprocess] (demo) at (0,-15.6) {5. Maintain prototype operational records};
+\node[dfdentity] (staff3) at (-5.5,-15.6) {Owner/Pharmacist};
+\node[dfdstore] (session) at (5.5,-15.6) {D1: Session payload\\Prototype records};
+\draw[flow] (staff1.north east)--node[note,above]{email / username,\\password, remember me}(auth.150);
+\draw[flow] (auth.210)--node[note,below]{login outcome,\\session cookie}(staff1.south east);
+\draw[flow] (auth.30)--node[note,above]{account lookup,\\session changes}(users.north west);
+\draw[flow] (users.south west)--node[note,below]{account verification data,\\session state}(auth.330);
+\draw[flow] (staff2.north east)--node[note,above]{search / filters,\\medicine fields}(catalogue.150);
+\draw[flow] (catalogue.210)--node[note,below]{matches, details,\\validation feedback}(staff2.south east);
+\draw[flow] (catalogue.30)--node[note,above]{lookup, create,\\update / status change}(meds1.north west);
+\draw[flow] (meds1.south west)--node[note,below]{medicine fields,\\saved-record state}(catalogue.330);
+\draw[flow] (reader.north east)--node[note,above]{report filters,\\export / print request}(report.150);
+\draw[flow] (report.210)--node[note,below]{summary, CSV,\\printable catalogue}(reader.south east);
+\draw[flow] (report.30)--node[note,above]{filtered catalogue\\query}(meds2.north west);
+\draw[flow] (meds2.south west)--node[note,below]{medicine rows,\\status and category data}(report.330);
+\draw[flow] (questioner.north east)--node[note,above]{reviewed transcript /\\typed text, language}(assistant.150);
+\draw[flow] (assistant.210)--node[note,below]{catalogue reply,\\report link or fallback}(questioner.south east);
+\draw[flow] (assistant.30)--node[note,above]{brand / generic-name\\lookup, summary query}(meds3.north west);
+\draw[flow] (meds3.south west)--node[note,below]{active medicine matches,\\prescription flag / counts}(assistant.330);
+\draw[flow] (staff3.north east)--node[note,above]{supplier, customer,\\inventory / billing edits}(demo.150);
+\draw[flow] (demo.210)--node[note,below]{sample rows, feedback,\\demo export}(staff3.south east);
+\draw[flow] (demo.30)--node[note,above]{session-record\\read / write request}(session.north west);
+\draw[flow] (session.south west)--node[note,below]{current session's\\prototype rows}(demo.330);
 \end{tikzpicture}
-\caption{DFD Level 1: internal processes and logical stores. D1's session payload is not a separate business database. Protected processes require an authenticated session.}
+\caption{DFD Level 1: five circular processes with explicit requests and returned data. Repeated actor and D2 symbols denote the same participant or store. D1 includes framework session data and its prototype payload; it is not a separate operational database. Processes 2--5 require an authenticated session.}
 \end{figure}
 
 \subsubsection{Data model and data dictionary}
