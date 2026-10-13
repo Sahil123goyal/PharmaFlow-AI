@@ -292,33 +292,67 @@ class ModuleDeleteView(LoginRequiredMixin, View):
         return redirect("core:module", module=module)
 
 
-def chatbot_reply(message):
-    """Small deterministic reply service that can later call an AI provider."""
-    text = message.lower()
-    if "inventory" in text or "stock" in text:
-        return "Inventory has 4 tracked items. Amoxicillin is low at 18 units and Insulin Glargine needs an expiry check."
-    if "sales" in text or "revenue" in text:
-        return "The prototype dashboard shows Rs 84,260 in sales this month, up 12.4% from last month."
-    if "order" in text or "bill" in text:
-        return "There are 3 recent bills in the demo view. Two are paid and one is still pending."
-    if "medicine" in text or "catalog" in text:
-        return "You can search, filter, add, edit, deactivate and review medicines from the Medicines module."
-    if "help" in text or "hello" in text or "hi" in text:
-        return "I can help with medicines, stock, bills, sales and dashboard summaries. What would you like to check?"
-    return "I can help with medicines, inventory, bills and sales. Try asking about low stock or this month's sales."
+class CatalogueReportView(LoginRequiredMixin, TemplateView):
+    """Printable full catalogue and spreadsheet-friendly CSV for signed-in users."""
+
+    template_name = "core/catalogue_report.html"
+
+    def get(self, request, *args, **kwargs):
+        import csv
+        from django.http import HttpResponse
+        from .catalogue_report import catalogue_snapshot
+
+        snapshot = catalogue_snapshot()
+        if request.GET.get("format") == "csv":
+            response = HttpResponse(content_type="text/csv; charset=utf-8")
+            response["Content-Disposition"] = 'attachment; filename="medicine-catalogue.csv"'
+            response.write("\ufeff")
+            writer = csv.writer(response)
+            writer.writerow(["Medicine", "Generic / composition", "Strength", "Category", "Manufacturer", "Unit", "Prescription flag", "Status"])
+
+            def safe_cell(value):
+                # Catalogue text must remain text when opened in a spreadsheet.
+                value = str(value)
+                return "'" + value if value.lstrip().startswith(("=", "+", "-", "@")) or value.startswith(("\t", "\r", "\n")) else value
+
+            for medicine in snapshot["medicines"]:
+                writer.writerow([safe_cell(value) for value in (
+                    medicine.name, medicine.generic_name, medicine.strength,
+                    medicine.category, medicine.manufacturer, medicine.get_unit_display(),
+                    "Required" if medicine.prescription_required else "Not marked as required",
+                    medicine.status_label,
+                )])
+        else:
+            response = self.render_to_response(self.get_context_data(**snapshot))
+        response["Cache-Control"] = "no-store"
+        return response
 
 
 class ChatbotView(LoginRequiredMixin, View):
-    """JSON endpoint for the prototype assistant."""
+    """Authenticated customer catalogue assistant; never exposes store records."""
 
     http_method_names = ["post", "options"]
 
+    def handle_no_permission(self):
+        return JsonResponse({"error": "Please sign in again."}, status=401)
+
     def post(self, request, *args, **kwargs):
+        from .assistant import customer_reply
+
+        if len(request.body) > 8192:
+            return JsonResponse({"error": "Message is too long."}, status=413)
         try:
             payload = json.loads(request.body.decode("utf-8"))
         except (json.JSONDecodeError, UnicodeDecodeError):
             return JsonResponse({"error": "Invalid request."}, status=400)
-        message = str(payload.get("message", "")).strip()
-        if not message:
-            return JsonResponse({"error": "Message is required."}, status=400)
-        return JsonResponse({"reply": chatbot_reply(message)})
+        if not isinstance(payload, dict) or not isinstance(payload.get("message"), str):
+            return JsonResponse({"error": "Message must be text."}, status=400)
+        message = payload["message"].strip()
+        language = payload.get("language", "en-IN")
+        if not message or len(message) > 500:
+            return JsonResponse({"error": "Enter between 1 and 500 characters."}, status=400)
+        if language not in ("en-IN", "hi-IN"):
+            return JsonResponse({"error": "Choose English or Hindi."}, status=400)
+        response = JsonResponse(customer_reply(message, language))
+        response["Cache-Control"] = "no-store"
+        return response

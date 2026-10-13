@@ -1,0 +1,43 @@
+{% extends "base_app.html" %}
+{% load static %}
+{% block title %}Medicine catalogue report · {{ PROJECT_NAME }}{% endblock %}
+{% block topbar_title %}Catalogue report{% endblock %}
+{% block page_css %}<link rel="stylesheet" href="{% static 'css/catalogue_report.css' %}" />{% endblock %}
+{% block page %}
+<header class="page__header">
+  <div>
+    <p class="page__eyebrow">{{ PROJECT_NAME }} · Catalogue report</p>
+    <h1 class="page__title">Medicine catalogue report</h1>
+    <p class="page__description">Complete catalogue · {{ total }} records · Generated {{ generated_at|date:"j M Y, H:i T" }}</p>
+  </div>
+  <div class="page__actions report-actions">
+    <a class="btn btn--secondary" href="{% url 'medicines:list' %}">Back to medicines</a>
+    <a class="btn btn--secondary" href="?format=csv">Download CSV</a>
+    <button type="button" class="btn btn--primary" data-print-report>Print / Save PDF</button>
+  </div>
+</header>
+<section class="stat-grid" aria-label="Report summary">
+  <div class="stat-card"><p class="stat-card__label">Total medicines</p><p class="stat-card__value">{{ total }}</p><p class="stat-card__meta">{{ category_count }} categories</p></div>
+  <div class="stat-card"><p class="stat-card__label">Active</p><p class="stat-card__value">{{ active }}</p><p class="stat-card__meta">Active catalogue records</p></div>
+  <div class="stat-card"><p class="stat-card__label">Inactive</p><p class="stat-card__value">{{ inactive }}</p><p class="stat-card__meta">Retained for reference</p></div>
+  <div class="stat-card"><p class="stat-card__label">Prescription required</p><p class="stat-card__value">{{ prescription_required }}</p><p class="stat-card__meta">Marked in the catalogue</p></div>
+</section>
+<section class="panel">
+  <h2 class="panel__title">Category breakdown</h2>
+  <ul class="report-categories">{% for category, count in category_summary %}<li>{{ category }} <strong>{{ count }}</strong></li>{% empty %}<li>No categories recorded.</li>{% endfor %}</ul>
+</section>
+<section class="panel">
+  <h2 class="panel__title">Complete medicine register</h2>
+  <p class="panel__description">All active and inactive records, sorted by medicine name. Blank details appear as “—”.</p>
+  <div class="table-wrap">
+    <table class="table report-table">
+      <thead><tr><th scope="col">Medicine</th><th scope="col">Generic / composition</th><th scope="col">Strength</th><th scope="col">Category</th><th scope="col">Manufacturer</th><th scope="col">Unit</th><th scope="col">Prescription flag</th><th scope="col">Status</th></tr></thead>
+      <tbody>{% for medicine in medicines %}<tr>
+        <td>{{ medicine.name }}</td><td>{{ medicine.generic_name|default:"—" }}</td><td>{{ medicine.strength|default:"—" }}</td><td>{{ medicine.category|default:"—" }}</td><td>{{ medicine.manufacturer|default:"—" }}</td><td>{{ medicine.get_unit_display }}</td><td>{% if medicine.prescription_required %}Required{% else %}Not marked as required{% endif %}</td><td>{{ medicine.status_label }}</td>
+      </tr>{% empty %}<tr><td colspan="8">No medicines have been added to the catalogue.</td></tr>{% endfor %}</tbody>
+    </table>
+  </div>
+</section>
+<p class="report-footnote">This report describes catalogue records, not stock availability. Quantities, batch expiry dates and prices are not recorded here. Prescription flags reflect entered data; confirm requirements with the pharmacist.</p>
+{% endblock %}
+{% block page_js %}<script src="{% static 'js/catalogue_report.js' %}" defer></script>{% endblock %}

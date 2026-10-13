@@ -1,0 +1,36 @@
+<section class="chatbot" data-assistant data-endpoint="{% url 'core:chat' %}" data-report-url="{% url 'core:catalogue_report' %}">
+  <button class="chatbot__launcher" type="button" aria-label="Open voice assistant" aria-expanded="false" aria-controls="assistant-panel" data-assistant-toggle>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v2a7 7 0 0 0 14 0v-2M12 19v3M8 22h8"/></svg>
+    <span>Voice assistant</span>
+  </button>
+  <div class="chatbot__panel assistant-panel" id="assistant-panel" role="region" aria-labelledby="assistant-title" hidden>
+    <header class="chatbot__header">
+      <div><p class="chatbot__eyebrow">PharmaFlow • Voice &amp; chat</p><h2 class="chatbot__title" id="assistant-title">Voice assistant</h2></div>
+      <button class="icon-button" type="button" aria-label="Close assistant" data-assistant-close>✕</button>
+    </header>
+    <div class="assistant-toolbar">
+      <label><span class="sr-only">Assistant language</span><select aria-label="Assistant language" data-language><option value="en-IN">English</option><option value="hi-IN">हिन्दी</option></select></label>
+      <label class="assistant-read"><input type="checkbox" data-read-aloud /> <span data-copy="read">Read replies aloud</span></label>
+      <button type="button" class="assistant-text-button" data-clear>Clear chat</button>
+    </div>
+    <div class="chatbot__messages" role="log" aria-label="Assistant conversation" aria-live="polite" aria-relevant="additions" data-messages></div>
+    <div class="assistant-prompts" aria-label="Suggested questions">
+      <button type="button" data-prompt="catalogue">Catalogue report</button>
+      <button type="button" data-prompt="Crocin">Find Crocin</button>
+      <button type="button" data-prompt="prescription">Prescription help</button>
+    </div>
+    <div class="assistant-voice">
+      <button class="assistant-mic" type="button" aria-pressed="false" data-mic><span data-copy="mic">Start microphone</span></button>
+      <button class="assistant-text-button" type="button" data-stop-audio disabled>Stop audio</button>
+    </div>
+    <p class="assistant-status" role="status" data-status>Ready. Type a medicine name or use the microphone.</p>
+    <form class="chatbot__form" data-assistant-form>
+      {% csrf_token %}
+      <label class="sr-only" for="assistant-input">Message the voice assistant</label>
+      <input class="chatbot__input" id="assistant-input" name="message" placeholder="Type a medicine name…" maxlength="500" autocomplete="off" required data-input />
+      <button class="btn btn--primary btn--sm" type="submit" aria-label="Send message" data-send>➤</button>
+    </form>
+    <p class="assistant-note" data-note>Catalogue help, not medical advice. Voice may use your browser’s online speech service. Review the transcript before sending. Chat stays on this page only.</p>
+    <noscript><p class="assistant-note">Enable JavaScript for chat and voice, or ask the pharmacist for help.</p></noscript>
+  </div>
+</section>

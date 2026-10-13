@@ -7,6 +7,7 @@ app_name = "core"
 urlpatterns = [
     path("", views.RootRedirectView.as_view(), name="root"),
     path("dashboard/", views.DashboardView.as_view(), name="dashboard"),
+    path("reports/medicine-catalogue/", views.CatalogueReportView.as_view(), name="catalogue_report"),
     path("modules/<slug:module>/", views.ModuleView.as_view(), name="module"),
     path("modules/<slug:module>/save/", views.ModuleSaveView.as_view(), name="module_save"),
     path("modules/<slug:module>/delete/", views.ModuleDeleteView.as_view(), name="module_delete"),

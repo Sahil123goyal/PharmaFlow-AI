@@ -1,0 +1,651 @@
+% PharmaFlowAI SRS -- standalone Overleaf-ready source.
+% Upload this file to Overleaf, set it as the main document and use pdfLaTeX.
+% No external images, bibliography database or shell escape are required.
+% Replace the bracketed metadata below before university submission.
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=25mm,headheight=14pt]{geometry}
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{array,tabularx,longtable,booktabs}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,fit,calc}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true,linkcolor=black,urlcolor=blue,
+  pdftitle={PharmaFlowAI Software Requirements Specification},
+  pdfsubject={Implementation-grounded academic SRS, version 1.0}}
+\urlstyle{same}
+\newcommand{\Project}{PharmaFlowAI}
+\newcommand{\Authors}{\begin{tabular}{@{}lr@{}}
+\textbf{Name} & \textbf{Roll number}\\
+Sahil & 1024240063\\
+Takshit & 1024240056\\
+Sidak & 1024240043\\
+Ridhmann & 1024240059
+\end{tabular}}
+\newcommand{\Institution}{Thapar Institute of Engineering and Technology}
+\newcommand{\Department}{AIML}
+\newcommand{\Supervisor}{[Supervisor name and designation]}
+\newcommand{\Course}{UCS503 --- Software Engineering}
+\newcommand{\SubmissionDate}{}
+\newcommand{\BaselineDate}{12 October 2026}
+\newcommand{\Source}[1]{\texttt{\small\detokenize{#1}}}
+\newcommand{\Implemented}{\textbf{Implemented}}
+\newcommand{\Prototype}{\textbf{Prototype}}
+\newcommand{\Proposed}{\textbf{Proposed}}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt}
+\setlength{\emergencystretch}{2em}
+\renewcommand{\arraystretch}{1.16}
+\setlist{nosep,leftmargin=1.5em,topsep=4pt}
+\titleformat{\section}{\sffamily\bfseries\LARGE}{\thesection}{0.6em}{}
+\titleformat{\subsection}{\sffamily\bfseries\large}{\thesubsection}{0.6em}{}
+\titleformat{\subsubsection}{\sffamily\bfseries\normalsize}{\thesubsubsection}{0.6em}{}
+\titlespacing*{\section}{0pt}{18pt}{10pt}
+\titlespacing*{\subsection}{0pt}{13pt}{6pt}
+\captionsetup{font=small,labelfont=bf,skip=6pt}
+\counterwithin{figure}{section}
+\counterwithin{table}{section}
+\setcounter{tocdepth}{2}
+\pagestyle{plain}
+\tikzset{
+  box/.style={draw,rounded corners=2pt,align=center,font=\small,text width=30mm,minimum height=12mm,inner sep=4pt},
+  process/.style={box,rounded corners=7pt},
+  store/.style={draw,double,align=center,font=\small,text width=34mm,minimum height=12mm,inner sep=4pt},
+  flow/.style={-{Stealth[length=2mm]},thick},
+  note/.style={font=\scriptsize,align=center,fill=white,inner sep=2pt},
+  decision/.style={diamond,draw,aspect=2.3,align=center,font=\small,inner sep=2pt}
+}
+
+\begin{document}
+\begin{titlepage}
+\thispagestyle{plain}
+\vspace*{8mm}
+\hrule height 1.5pt
+\vspace{12mm}
+\begin{flushright}
+{\LARGE\bfseries SOFTWARE REQUIREMENTS\\[3pt]SPECIFICATION\par}
+\vspace{12mm}
+{\Large for\par}
+\vspace{10mm}
+{\LARGE\bfseries \Project\par}
+\vspace{4mm}
+{\large Pharmacy Management System\par}
+\vspace{10mm}
+{\large Version 1.0\par}
+\vspace{8mm}
+{\large Prepared by:\\[4pt]\Authors\par}
+\vspace{8mm}
+{\large Submitted to: \Supervisor\par}
+\vspace{9mm}
+\Department\\\Institution\\\Course
+\vspace{12mm}
+\SubmissionDate
+\end{flushright}
+\vfill
+{\small Implementation baseline reviewed: \BaselineDate.\\
+Supervisor and submission-date fields remain editable pending confirmation.}
+\end{titlepage}
+\setcounter{page}{2}
+\tableofcontents
+\clearpage
+
+\section{Introduction}
+\subsection{Purpose}
+This Software Requirements Specification (SRS) defines the current scope, externally observable behaviour, data requirements and quality expectations of \Project. The application supports a small pharmacy through authenticated access to a medicine master catalogue, catalogue summaries, printable reports and a bilingual voice/text assistant. Additional operational modules demonstrate possible workflows using session-scoped sample data.
+
+This document is grounded in the project working directory reviewed on \BaselineDate, including current uncommitted files. Source code, templates, configuration and automated tests determine the implementation baseline. Comments describing future inventory or billing behaviour are not treated as evidence that those capabilities exist.
+
+The SRS provides a common reference for academic assessment, maintenance and further development. Requirements use \emph{shall} for verifiable expected behaviour and distinguish the following states throughout:
+\begin{itemize}
+\item \Implemented: behaviour supported by the reviewed implementation; this label does not imply production certification or exhaustive testing.
+\item \Prototype: executable demonstration behaviour based on session-specific sample records, not a completed operational subsystem.
+\item \Proposed: a future requirement or measurable target not established as implemented or achieved.
+\end{itemize}
+Requirement identifiers such as FR-AUTH-01 and NFR-SEC-01 are stable references for verification. Their priority indicates importance within the stated scope, not completion status.
+
+\subsection{Intended Audience and Reading Suggestions}
+Academic evaluators and project supervisors should read Sections 1--3 to understand scope, design and functional coverage. The Owner/Pharmacist should consult Sections 2.2, 2.3 and 4.4 for supported activities and business limitations. Developers should read the interfaces, data model and source references in Sections 2 and 5. Testers should use the acceptance criteria in Section 3.2 and the verification mapping in Section 5.3.
+
+The term \emph{customer assistant} describes the audience of the assistance feature. It does not establish a separate customer account type, public portal or ordering service. The feature is named \emph{Voice assistant} in the user interface and is available only inside the signed-in application.
+
+\subsection{Project Scope}
+The implemented scope comprises login with email or username; configurable session persistence; an authenticated dashboard; medicine creation, inspection, editing and status changes; catalogue searching, filtering and pagination; a complete catalogue report with CSV export and browser printing; and English/Hindi catalogue assistance with optional browser speech input and output.
+
+The inventory, billing, supplier and customer screens support sample-record addition, editing, deletion, client-side search and export. Their data is serialized inside the user's Django session. Analytics displays predefined demonstration metrics. These interfaces do not provide a persistent, shared business ledger, and their displayed figures are not measurements of actual pharmacy performance.
+
+The scope excludes completed batch inventory, verified stock availability, price management, expiry calculations, sales transactions, payment processing, tax calculation, clinical decision support and generative AI. Independent supplier/customer portals and email-based password recovery are also not implemented. PostgreSQL configuration is available, but a deployed PostgreSQL environment is not evidenced by the project.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=8mm and 9mm]
+\node[box] (user) {Owner/Pharmacist\\Sign in};
+\node[process,right=of user] (dash) {Authenticated\\dashboard};
+\node[process,right=of dash] (cat) {Medicine\\catalogue};
+\node[box,right=of cat] (report) {Report, CSV\\and printing};
+\node[process,below=of dash] (demo) {Session-scoped\\demo modules};
+\node[process,below=of cat] (voice) {Voice / text\\assistant};
+\draw[flow] (user)--(dash);
+\draw[flow] (dash)--(cat);
+\draw[flow] (cat)--(report);
+\draw[flow] (dash)--(demo);
+\draw[flow] (dash.south east)--(voice.west);
+\draw[flow] (voice)--node[note,right]{catalogue lookup}(cat);
+\end{tikzpicture}
+\caption{Entire workflow of the current application. Operational demos remain separate from catalogue records.}
+\label{fig:workflow}
+\end{figure}
+
+\clearpage
+\section{Overall Description}
+\subsection{Product Perspective}
+\Project{} is a server-rendered web application implemented as a Django monolith. The browser renders Django templates and static HTML, CSS and JavaScript assets. Normal application forms use HTTP requests and server redirects. The voice assistant adds an asynchronous JSON request to the authenticated \texttt{/chat/} endpoint.
+
+Three project applications are installed: \texttt{accounts}, \texttt{medicines} and \texttt{core}. Django supplies authentication, administration, sessions, messages, static-file handling and an object-relational mapper (ORM). There is no separate React client, REST framework, mobile application, message broker or external language-model service in the reviewed repository.
+
+The default data store is SQLite. Setting PostgreSQL environment variables switches the configured database backend. Django's default database session backend also stores session records; consequently, the demo modules are \emph{session-scoped server data}, not relational inventory or billing tables and not merely browser local storage. Medicine records form one shared catalogue; the schema does not associate each medicine with a particular account or pharmacy tenant.
+
+\subsection{User Classes and Characteristics}
+The Owner/Pharmacist is one combined functional actor in this SRS and performs the pharmacy's authenticated operational activities. Supplier and Customer are additional business participants, represented by prototype contact records and assisted interactions; they do not have independent account types or portals in the current application. Django administration is a permission-controlled capability of an authorized account, not a separate business actor.
+\begin{table}[H]
+\centering\small
+\caption{User classes and actual authorization boundaries}
+\begin{tabularx}{\textwidth}{L{30mm}YY}
+\toprule User class & Typical activities & Current access distinction\\\midrule
+Owner/Pharmacist & Maintain catalogue, inspect dashboard, use reports and assistant, and manage prototype supplier/customer records. & Ordinary views require authentication. Access to \texttt{/admin/} additionally depends on Django staff status and permissions.\\
+Supplier & Provide supplier contact information for pharmacy record keeping. & Represented by session-scoped prototype records maintained by the Owner/Pharmacist; no supplier login or portal.\\
+Customer & Receive assistance with catalogue questions by text or voice at an authenticated counter session. & Contact records are session-scoped prototypes. No customer login or public assistant route is implemented.\\
+Unauthenticated visitor & Open sign-in and password-help pages. & Protected pages redirect to login; the assistant endpoint returns an authentication error.\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}
+\node[box,text width=42mm] (a) at (0,0) {Pharmacy participants};
+\node[box,text width=38mm] (o) at (-5,-2.4) {Owner/Pharmacist\\Authenticated operations};
+\node[box,text width=38mm] (s) at (0,-2.4) {Supplier\\Prototype contact records};
+\node[box,text width=38mm] (c) at (5,-2.4) {Customer\\Contact records and assisted queries};
+\draw[flow] (a)--(o);\draw[flow] (a)--(s);\draw[flow] (a)--(c);
+\end{tikzpicture}
+\caption{Business participants with a single Owner/Pharmacist actor. Supplier and Customer are not separate authenticated account classes in the current prototype.}
+\end{figure}
+
+\subsection{Product Functions}
+\subsubsection{Implemented and prototype modules}
+\begin{table}[H]
+\centering\small
+\caption{Module responsibilities and persistence}
+\begin{tabularx}{\textwidth}{L{29mm}L{23mm}Y}
+\toprule Module & Status & Responsibility and data source\\\midrule
+Accounts & Implemented & Custom Django user, email/username authentication, login/logout and manual password-help guidance.\\
+Medicines & Implemented & Database-backed catalogue with normalization, duplicate checks, filtering, details, editing and active/inactive status.\\
+Dashboard & Implemented / mixed & Real medicine counts and recent additions alongside navigation and sample-module summaries.\\
+Catalogue report & Implemented & All active and inactive medicines, category counts, prescription flags, CSV and print layout.\\
+Voice assistant & Implemented & Deterministic catalogue queries and report intents; English/Hindi UI and replies; browser speech APIs.\\
+Inventory & Prototype & Medicine label, quantity, reorder level, status and shelf fields stored as session sample records.\\
+Billing & Prototype & Invoice, customer, item description, amount and status strings; no transaction calculation or stock deduction.\\
+Suppliers / customers & Prototype & Session-scoped contact and status records; no foreign-key links to medicines, invoices or purchases.\\
+Analytics & Prototype & Read-only sample metrics; no aggregation over operational transactions.\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection{System context and data flow}
+The context diagram treats browser speech services as an external dependency. Their implementation and network use depend on the browser. The Django server receives the submitted text and selected language, not a microphone audio upload. The system does not automatically submit recognized speech; the user reviews the transcript and sends it explicitly.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=16mm and 20mm]
+\node[process,text width=43mm,minimum height=20mm] (system) {0. \Project\\Web application};
+\node[box,left=of system] (staff) {Signed-in\\user};
+\node[box,right=of system] (speech) {Browser speech\\service};
+\node[box,below=18mm of system,text width=43mm] (files) {Report reader /\\browser print destination};
+\draw[flow] (staff.north east)--node[note,above]{credentials, forms,\\questions}(system.north west);
+\draw[flow] (system.south west)--node[note,below]{pages, results,\\replies}(staff.south east);
+\draw[flow] (system.north east)--node[note,above]{voice input /\\reply text}(speech.north west);
+\draw[flow] (speech.south west)--node[note,below]{transcript /\\spoken output}(system.south east);
+\draw[flow] (system)--node[note,right]{CSV / printable report}(files);
+\end{tikzpicture}
+\caption{DFD Level 0: external interactions. Speech-service interactions occur in the browser component of the application.}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=12mm and 28mm]
+\node[process] (auth) {1. Authenticate\\and manage session};
+\node[store,right=of auth] (users) {D1: User and\\Django session data};
+\node[process,below=of auth] (catalogue) {2. Maintain /\\query catalogue};
+\node[store,right=of catalogue] (meds) {D2: Medicine\\records};
+\node[process,below=of catalogue] (report) {3. Summarize /\\export catalogue};
+\node[process,right=of report] (assistant) {4. Classify text /\\answer from catalogue};
+\node[process,below=of report] (demo) {5. Edit prototype\\module records};
+\node[store,right=of demo] (session) {D1 session payload:\\\texttt{prototype\_modules}};
+\draw[flow] (auth)--node[note,above]{user check / session write}(users);
+\draw[flow] (catalogue)--node[note,above]{read / create / update}(meds);
+\draw[flow] (meds.south west)--(report.north east);
+\draw[flow] (meds)--node[note,right]{read}(assistant);
+\draw[flow] (assistant)--node[note,above]{report intent}(report);
+\draw[flow] (demo)--node[note,above]{read / write}(session);
+\draw[dashed] (users.east) -- ++(13mm,0) |- (session.east);
+\end{tikzpicture}
+\caption{DFD Level 1: internal processes and logical stores. D1's session payload is not a separate business database. Protected processes require an authenticated session.}
+\end{figure}
+
+\subsubsection{Data model and data dictionary}
+Two project-defined domain models are migrated: \texttt{accounts.User} and \texttt{medicines.Medicine}. Django adds framework tables for sessions, permissions, groups, content types and administration logs. No batch, invoice, customer or supplier domain models exist. No direct user-to-medicine foreign key exists.
+
+\begin{table}[H]
+\centering\small
+\caption{Medicine entity data dictionary}
+\begin{tabularx}{\textwidth}{L{34mm}L{28mm}Y}
+\toprule Attribute & Type / size & Meaning and constraint\\\midrule
+\texttt{id} & BigAutoField & Automatically generated primary key.\\
+\texttt{name} & Char(200) & Required brand/product name; indexed.\\
+\texttt{generic\_name} & Char(200) & Optional composition or generic name.\\
+\texttt{strength} & Char(50) & Optional pack-strength text; not a dosage recommendation.\\
+\texttt{category} & Char(100) & Optional free-text classification; indexed.\\
+\texttt{manufacturer} & Char(150) & Optional manufacturer label.\\
+\texttt{unit} & Char(20), choice & Tablet, capsule, syrup, injection, ointment, drops, sachet or other; default tablet.\\
+\texttt{prescription\_required} & Boolean & Recorded prescription flag; default false. It is not legal or clinical verification.\\
+\texttt{is\_active} & Boolean & Default true; inactive records remain readable.\\
+\texttt{created\_at}, \texttt{updated\_at} & Date/time & Creation and latest-save timestamps.\\
+\bottomrule
+\end{tabularx}
+\end{table}
+Medicine text is normalized by trimming and collapsing whitespace. The combination of lowercased name, strength and manufacturer is unique at database level. The form provides a corresponding duplicate validation message. A composite index supports active-status/name access. There are no quantity, stock balance, expiry, cost or selling-price fields in this entity.
+
+The custom User model extends Django's \texttt{AbstractUser}. It retains username, password hash, identity fields and framework permission attributes; email is unique and required by the model; \texttt{role} is a 20-character choice field defaulting to OWNER. Django's standard groups and permissions remain available. This legacy role metadata does not define separate business actors in this SRS: Owner/Pharmacist is one functional actor. Stored labels are not treated as an enforced authorization policy.
+
+\subsection{Operating Environment}
+\begin{table}[H]
+\centering\small
+\caption{Verified technology baseline and conditional dependencies}
+\begin{tabularx}{\textwidth}{L{37mm}Y}
+\toprule Component & Baseline\\\midrule
+Runtime / framework & Python 3.13.9 and Django 6.1 observed in the local environment; the development launcher selects Python 3.13.\\
+Declared dependencies & Django 6.1, python-dotenv 1.1.1 and psycopg[binary] 3.2.10 in \texttt{requirements.txt}. Dependency installation on every platform is not verified.\\
+Frontend & Django templates, HTML, CSS design tokens and plain JavaScript. Node.js runs assistant unit tests; it is not the application's web backend.\\
+Database & SQLite by default; PostgreSQL backend selected when \texttt{POSTGRES\_DB} is supplied. No production database deployment is assumed.\\
+Web serving & Local Django development server; WSGI and ASGI entry points exist. Production server and hosting provider are unspecified.\\
+Speech & Browser \texttt{SpeechRecognition}/\texttt{webkitSpeechRecognition} and \texttt{speechSynthesis}; availability and voices vary by device.\\
+Client / hardware & A supported browser and display/keyboard for text use. Microphone and permission for voice input; speaker/headphones for audio output. No measured minimum CPU/RAM specification is established.\\
+Network / configuration & Localhost for development or HTTPS for deployed microphone use. Browser speech services may require internet. Optional \texttt{.env} configuration; default time zone Asia/Kolkata.\\
+\bottomrule
+\end{tabularx}
+\end{table}
+Windows is the evidenced development environment. Other platforms may run the underlying technologies, but cross-platform acceptance testing is not evidenced. Speech input is an optional enhancement: unsupported browsers must retain text interaction. Security settings available outside debug mode include HTTPS redirection, secure cookies and HSTS; their correct deployment depends on configuration and a trusted reverse-proxy arrangement.
+
+\subsection{Design}
+\subsubsection{Architecture and deployment boundary}
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=11mm and 13mm]
+\node[box,text width=115mm] (browser) {Browser: Django-rendered pages, CSS, forms, JavaScript, voice input/output};
+\node[box,below=of browser,text width=115mm] (django) {Django URL routing, session/authentication and CSRF middleware};
+\node[box,below=of django,xshift=-43mm,text width=27mm] (a) {Accounts\\views / user};
+\node[box,below=of django,text width=27mm] (m) {Medicines\\views / forms};
+\node[box,below=of django,xshift=43mm,text width=27mm] (c) {Core\\dashboard / chat / report};
+\node[store,below=18mm of m,text width=85mm] (db) {Django ORM / session backend\\SQLite (default) or PostgreSQL (configured)};
+\draw[flow] (browser)--node[note,right]{HTTP forms / JSON}(django);
+\draw[flow] (django.south)-|(a);\draw[flow] (django)--(m);\draw[flow] (django.south)-|(c);
+\draw[flow] (a.south)|-(db.west);\draw[flow] (m)--(db);\draw[flow] (c.south)|-(db.east);
+\end{tikzpicture}
+\caption{Implemented component architecture. WSGI/ASGI deployment hooks do not establish a production infrastructure.}
+\end{figure}
+
+\subsubsection{External interfaces}
+The primary user interface consists of sign-in, dashboard, medicine list/detail/form, prototype module, catalogue report and voice-assistant panel screens. Forms include CSRF tokens. JavaScript progressively enhances navigation, table search/export, password visibility and the assistant. The assistant requires JavaScript; ordinary server-rendered catalogue operations are not a single-page application.
+
+\begin{table}[H]
+\centering\small
+\caption{Principal HTTP interfaces}
+\begin{tabularx}{\textwidth}{L{53mm}L{24mm}Y}
+\toprule Route & Methods & Purpose / access\\\midrule
+\texttt{/accounts/login/} & GET, POST & Display sign-in and authenticate.\\
+\texttt{/accounts/logout/} & POST & End the session; GET is disallowed.\\
+\texttt{/accounts/password-help/} & GET & Explain manual reset through administration.\\
+\texttt{/dashboard/} & GET & Authenticated dashboard.\\
+\texttt{/medicines/} & GET & Authenticated search/filter/sort list.\\
+\texttt{/medicines/add/},\newline\texttt{/medicines/<id>/edit/} & GET, POST & Authenticated creation / editing.\\
+\texttt{/medicines/<id>/},\newline\texttt{/medicines/<id>/status/} & GET; POST & Inspect record; change status respectively.\\
+\texttt{/modules/<slug>/} & GET & Authenticated prototype view. Separate \texttt{save/} and \texttt{delete/} routes accept POST.\\
+\texttt{/reports/medicine-catalogue/} & GET & Authenticated full report; \texttt{?format=csv} exports CSV.\\
+\texttt{/chat/} & POST & Authenticated JSON assistant; CSRF required.\\
+\texttt{/admin/} & Framework routes & Django administration; staff status and permissions apply.\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The assistant request object contains a string \texttt{message} and optional \texttt{language}, which defaults to \texttt{en-IN}; \texttt{hi-IN} is the other allowed value. After trimming, messages must contain 1--500 characters. The view rejects request bodies larger than 8,192 bytes. Successful responses contain \texttt{reply}, \texttt{medicines} and, for report intents, \texttt{report\_url}. Each medicine result contains name, generic name and prescription flag. The frontend accepts a report link only when it equals the server-rendered, same-application report path.
+
+Validation errors use HTTP 400; the assistant view uses 401 when authentication is missing; CSRF rejection uses 403; oversized bodies checked by the view use 413. Django may reject requests earlier through its own request-size handling. Report and successful chat responses specify \texttt{Cache-Control: no-store}. Browser printing can save a PDF where supported; no server-side PDF generation service is implemented.
+
+\subsubsection{Catalogue activity}
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=8mm and 16mm]
+\node[box] (open) {Open add/edit form};
+\node[box,below=of open] (submit) {Enter data and submit};
+\node[decision,below=of submit] (valid) {Valid and\\not duplicate?};
+\node[box,left=of valid] (error) {Show field error;\\retain bound form};
+\node[box,below=of valid] (save) {Save medicine\\through ORM};
+\node[box,below=of save] (detail) {Redirect to details;\\show success};
+\draw[flow] (open)--(submit);\draw[flow] (submit)--(valid);
+\draw[flow] (valid)--node[note,above]{No}(error);
+\draw[flow] (error.north)|-(submit.west);
+\draw[flow] (valid)--node[note,right]{Yes}(save);\draw[flow] (save)--(detail);
+\end{tikzpicture}
+\caption{Catalogue creation/edit activity. Application forms deactivate medicines instead of providing a delete action.}
+\end{figure}
+
+\subsubsection{Voice-assistant interaction}
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[x=1cm,y=1cm]
+\foreach \x/\name in {0/User,4/Browser,8/Django,12/Catalogue} {
+\node[draw,minimum width=22mm,font=\small] at (\x,0) {\name};
+\draw[dashed] (\x,-.3)--(\x,-6.8);}
+\draw[flow] (0,-.8)--node[note,above]{Start microphone}(4,-.8);
+\node[note] at (4,-1.45) {Speech service produces transcript};
+\draw[flow] (4,-2)--node[note,above]{Display transcript}(0,-2);
+\draw[flow] (0,-2.8)--node[note,above]{Review and Send}(4,-2.8);
+\draw[flow] (4,-3.5)--node[note,above]{Text + language + CSRF}(8,-3.5);
+\draw[flow] (8,-4.2)--node[note,above]{Validate and query}(12,-4.2);
+\draw[flow] (12,-4.9)--node[note,above]{Matching records}(8,-4.9);
+\draw[flow] (8,-5.6)--node[note,above]{JSON reply}(4,-5.6);
+\draw[flow] (4,-6.3)--node[note,above]{Text; optional speech}(0,-6.3);
+\end{tikzpicture}
+\caption{Voice-assistant sequence. Typed input starts at the review/send step; medical or unsupported questions may return without a catalogue query.}
+\end{figure}
+The backend classifies text using explicit patterns, aliases and token matching. It does not retain conversation context or call a language model. A single lookup returns up to five active medicine results, while report requests summarize all active and inactive catalogue entries. Medical-pattern handling is a bounded rule set rather than a validated clinical classifier. Speech is single-turn, with review before transmission and optional playback afterward.
+
+\clearpage
+\section{System Features}
+\subsection{Description and Priority}
+Features are prioritized according to their role in a usable catalogue application. High priority denotes core access, data integrity and supported outputs; medium priority denotes convenience or demonstration functions. Prototype priority does not imply readiness for real transactions.
+\begin{table}[H]
+\centering\small
+\caption{Feature priorities}
+\begin{tabularx}{\textwidth}{L{35mm}L{19mm}L{24mm}Y}
+\toprule Feature & Priority & State & Rationale\\\midrule
+Authentication & High & Implemented & Establish access to shared pharmacy data and end sessions correctly.\\
+Medicine maintenance & High & Implemented & Maintain the master data used by catalogue views and reports.\\
+Search and dashboard & High & Implemented & Locate records and inspect actual catalogue counts.\\
+Catalogue report & High & Implemented & Provide a complete, exportable register with clear data limitations.\\
+Voice/text assistant & Medium & Implemented & Offer bilingual catalogue access without promising live stock or medical advice.\\
+Operational modules & Medium & Prototype & Demonstrate proposed workflows for later domain-model development.\\
+Transactional inventory / billing & Future & Proposed & Requires models, integrity rules and business decisions absent from the current system.\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Functional Requirements}
+The acceptance criteria below define concrete checks against the reviewed baseline. They are not a statement that every manual scenario, environment or concurrency condition has already passed. The verification mapping in Section 5.3 distinguishes automated evidence from remaining validation.
+
+\subsubsection{Accounts and authentication}
+All requirements in Table~\ref{tab:auth} are implemented and high priority, except password-help guidance, which is medium priority. Sources: S02, S03 and S09 in Section 5.5.
+\begin{longtable}{L{25mm}L{62mm}L{60mm}}
+\caption{Authentication requirements and acceptance criteria}\label{tab:auth}\\
+\toprule ID & Requirement & Acceptance criterion\\\midrule\endfirsthead
+\toprule ID & Requirement & Acceptance criterion\\\midrule\endhead
+\bottomrule\endfoot
+FR-AUTH-01 & The system shall authenticate an active account using a username or email and a valid password. & Valid credentials reach the dashboard or an accepted local next-page URL. An email lookup is case-insensitive.\\
+FR-AUTH-02 & The system shall reject incorrect credentials and inactive accounts without authenticating them. & Incorrect or unknown credentials produce a generic failure message; an inactive user does not acquire an authenticated session.\\
+FR-AUTH-03 & The system shall apply the selected Remember me session policy. & Checked: session expiry uses the configured age, default 14 days. Unchecked: expiry is set to browser-close semantics. Browser restoration behaviour is outside the application guarantee.\\
+FR-AUTH-04 & The system shall protect dashboard, medicine, module and report access through login requirements. & Anonymous requests redirect to login. Anonymous chat POST requests return HTTP 401 when not rejected earlier by CSRF middleware.\\
+FR-AUTH-05 & The system shall accept sign-out through POST and flush the authenticated session. & GET logout is rejected; POST logout returns to sign-in with confirmation and subsequent protected access requires login.\\
+FR-AUTH-06 & The system shall restrict post-login and post-status-change redirects to accepted local destinations. & A normal local next URL is honoured; an external next URL is ignored in favour of the default destination.\\
+FR-AUTH-07 & The password-help page shall explain the manual administrator reset path. & The page states that self-service email recovery is unavailable; it does not claim to send a reset email.\\
+\end{longtable}
+
+\subsubsection{Medicine catalogue and dashboard}
+All requirements in Table~\ref{tab:medicine} are implemented and high priority. Sources: S04, S05, S06 and S09.
+\begin{longtable}{L{25mm}L{62mm}L{60mm}}
+\caption{Catalogue and dashboard requirements}\label{tab:medicine}\\
+\toprule ID & Requirement & Acceptance criterion\\\midrule\endfirsthead
+\toprule ID & Requirement & Acceptance criterion\\\midrule\endhead
+\bottomrule\endfoot
+FR-MED-01 & The system shall create a medicine with its supported master-data fields and require a non-blank name. & A valid submission creates a database record and redirects to details. A missing or whitespace-only name displays validation errors.\\
+FR-MED-02 & The system shall normalize medicine text and reject duplicate name/strength/manufacturer combinations case-insensitively. & Extra internal and edge whitespace is normalized; an equivalent duplicate fails validation. Different strength or manufacturer is allowed.\\
+FR-MED-03 & The system shall permit inspection and editing of an existing medicine. & Details show stored data; the edit form is prefilled; a valid edit persists. A nonexistent identifier returns HTTP 404.\\
+FR-MED-04 & The application shall toggle active/inactive status through POST without deleting the medicine. & POST changes the flag, updates the timestamp and shows confirmation. GET does not mutate state; reactivation is possible.\\
+FR-MED-05 & The list shall search medicine name, generic name and manufacturer and filter by status and category. & A matching query narrows results; default status is active. Invalid form filters fall back to the defined defaults.\\
+FR-MED-06 & The list shall support the defined sort options and paginate at 20 records per page. & Name ascending/descending, category and recently updated ordering work; filters remain in pagination links.\\
+FR-MED-07 & The interface shall distinguish an empty catalogue from a search with no matches. & An empty catalogue offers initial creation; a filtered empty result indicates that no match was found.\\
+FR-DASH-01 & The dashboard shall derive total, active and inactive medicine counts from database records. & Counts agree with the current Medicine table; recent additions are the five latest records by creation time.\\
+FR-DASH-02 & The dashboard shall identify operational modules as sample/demo views. & Module links and explanatory text do not represent sample rows or analytics values as completed transaction records.\\
+\end{longtable}
+Catalogue dashboard categories count distinct non-empty recorded categories. The full report additionally groups blank categories under ``Uncategorised''. These different definitions are preserved rather than silently forcing their totals to agree.
+
+\subsubsection{Catalogue reporting}
+Table~\ref{tab:report} requirements are implemented and high priority. Sources: S06 and S09.
+\begin{longtable}{L{25mm}L{62mm}L{60mm}}
+\caption{Catalogue reporting requirements}\label{tab:report}\\
+\toprule ID & Requirement & Acceptance criterion\\\midrule\endfirsthead
+\toprule ID & Requirement & Acceptance criterion\\\midrule\endhead
+\bottomrule\endfoot
+FR-REP-01 & The report shall include all active and inactive catalogue entries with a generation timestamp and summary counts. & Total, active, inactive and prescription-required counts agree with the loaded records; categories include an Uncategorised group when necessary.\\
+FR-REP-02 & The report shall list name, composition, strength, category, manufacturer, unit, prescription flag and status. & Records are ordered by name, strength and identifier. Missing display details use a dash; the report explains that quantities, prices and expiry dates are absent.\\
+FR-REP-03 & The report shall offer an authenticated UTF-8 CSV download with a header and every catalogue record. & Download is named medicine-catalogue.csv; CSV escaping preserves fields. Formula-like text is prefixed to avoid spreadsheet interpretation.\\
+FR-REP-04 & The report shall provide a browser print action and a print stylesheet. & Print layout hides application navigation and assistant controls and requests landscape A4. Saving PDF depends on browser print support, not a server PDF API.\\
+\end{longtable}
+
+\subsubsection{Prototype operational functions}
+All requirements in Table~\ref{tab:prototype} describe the current prototype and are medium priority. Source: S05. They must not be used as acceptance criteria for a completed pharmacy transaction system.
+\begin{longtable}{L{25mm}L{62mm}L{60mm}}
+\caption{Prototype module requirements}\label{tab:prototype}\\
+\toprule ID & Requirement & Acceptance criterion\\\midrule\endfirsthead
+\toprule ID & Requirement & Acceptance criterion\\\midrule\endhead
+\bottomrule\endfoot
+FR-DEMO-01 & The module view shall initialize its sample rows in the current session when absent. & Inventory, billing, suppliers, customers and analytics display their configured sample rows. One session's edits do not become shared domain records.\\
+FR-DEMO-02 & Writable demo modules shall support add, edit and delete through POST. & Required non-empty fields are checked, valid mutations update the session payload and confirmation appears. Unknown edit identifiers report an error.\\
+FR-DEMO-03 & Analytics shall remain read-only, and module tables shall support client-side search and export. & Analytics has no add/edit controls and mutation routes do not change it. Table search hides non-matching rows; export reflects visible table rows.\\
+\end{longtable}
+Prototype validation primarily checks whether fields are non-empty. Numeric HTML inputs do not establish server-side quantity constraints. Status and amount fields are strings, not validated transaction states or monetary values. The generic demo-table export is separate from the catalogue CSV implementation and does not have the same explicit formula-neutralization logic. Production hardening of prototype exports remains proposed.
+
+\subsubsection{Voice and text assistant}
+Requirements in Table~\ref{tab:assistant} are implemented. Access, validation and catalogue accuracy are high priority; language and speech convenience functions are medium priority. Sources: S07, S08, S09 and S10.
+\begin{longtable}{L{25mm}L{62mm}L{60mm}}
+\caption{Voice-assistant requirements}\label{tab:assistant}\\
+\toprule ID & Requirement & Acceptance criterion\\\midrule\endfirsthead
+\toprule ID & Requirement & Acceptance criterion\\\midrule\endhead
+\bottomrule\endfoot
+FR-VA-01 & The assistant shall accept authenticated text questions in English or Hindi with the defined request schema. & Unsupported language values, malformed JSON, non-string messages and empty or overlong text fail validation without a successful reply.\\
+FR-VA-02 & Medicine questions shall use active catalogue records rather than fixed sample stock answers. & A known name or supported generic-name query returns at most five results. An inactive record is excluded from ordinary lookup; an unknown query receives a fallback.\\
+FR-VA-03 & Recognized catalogue/report requests shall return current catalogue counts and the signed-in report link. & A request such as ``medicine catalogue proper report'' returns a summary and the correct local route rather than attempting only a medicine-name match.\\
+FR-VA-04 & The assistant shall avoid claiming real stock, prices or treatment suitability from catalogue presence. & Catalogue responses state the stock/price limitation. Recognized medical-advice patterns request pharmacist assistance from the combined Owner/Pharmacist actor; no treatment-generating service is invoked. The combined actor label does not itself establish a clinical qualification.\\
+FR-VA-05 & The interface shall offer English and Hindi selection and common Hindi medicine aliases. & Selecting the language changes assistant controls and reply language; an implemented alias maps to its English search term. Arbitrary transliteration is not promised.\\
+FR-VA-06 & Voice input shall start only following user action and shall place recognized words into an editable input. & A recognition event populates the draft without a chat request. Sending the reviewed draft triggers the request. Closing, hiding or leaving the page stops listening.\\
+FR-VA-07 & Spoken replies shall be opt-in and use the selected language where browser voices support it. & Unchecked read-aloud produces no speech request. Checked read-aloud invokes synthesis; stop, uncheck, close and page lifecycle controls cancel playback.\\
+FR-VA-08 & Text input shall remain available when voice is unsupported or permission is denied. & Unsupported recognition disables the microphone control with guidance. Denial and recognition failure release the listening state and allow typing.\\
+FR-VA-09 & The assistant shall handle network failure, expired sessions and cancellation without inserting obsolete replies. & Requests are aborted after the configured 15-second client timeout. Failures preserve the draft; cleared/closed conversations ignore late responses.\\
+FR-VA-10 & Chat history shall remain in page memory and be clearable. & Clear chat resets visible messages; navigation/reload does not restore them. The frontend retains at most 40 message elements; Django does not intentionally persist a conversation history.\\
+\end{longtable}
+The privacy requirement covers application storage behaviour, not the retention policies of a browser speech provider. Voice processing may use an online browser service, and the interface discloses this. Pattern-based medical routing is not exhaustive understanding of all possible questions.
+
+\subsubsection{Use cases and detailed scenarios}
+\begin{longtable}{L{26mm}L{121mm}}
+\caption{Representative use-case specifications}\\
+\toprule Use case & Scenario, alternatives and outcome\\\midrule\endfirsthead
+\toprule Use case & Scenario, alternatives and outcome\\\midrule\endhead
+\bottomrule\endfoot
+UC-01\newline Sign in & \textbf{Actor:} existing active user. \textbf{Precondition:} account has been created. \textbf{Trigger:} submit sign-in. \textbf{Flow:} enter email/username and password, select session preference, validate credentials, establish session, redirect. \textbf{Alternative:} invalid credentials show a generic error; unsafe next destinations are ignored. \textbf{Outcome:} authenticated session or no authenticated state. Maps to FR-AUTH-01--06.\\
+UC-02\newline Maintain medicine & \textbf{Actor:} signed-in user. \textbf{Trigger:} Add medicine or Edit. \textbf{Flow:} enter master data, normalize and validate, check uniqueness, save, show details and confirmation. \textbf{Alternative:} missing/duplicate name prevents a successful save. \textbf{Outcome:} persisted valid record. Status changes are separate POST actions. Maps to FR-MED-01--04.\\
+UC-03\newline Request report & \textbf{Actor:} signed-in user. \textbf{Trigger:} report link or assistant catalogue-report question. \textbf{Flow:} compute summary, open report, inspect complete register, optionally download CSV or print. \textbf{Alternative:} an empty catalogue shows a zero summary and empty-state message; unauthenticated report access redirects. \textbf{Outcome:} a timestamped report of current catalogue records, not stock or financial balances. Maps to FR-REP-01--04 and FR-VA-03.\\
+UC-04\newline Ask by voice & \textbf{Actor:} user at a signed-in session. \textbf{Precondition:} supported browser, secure context and microphone permission. \textbf{Flow:} select language, start microphone, speak a name, review/correct transcript, send, receive catalogue reply, optionally hear it. \textbf{Alternatives:} denial/unsupported voice uses text; medical-pattern query requests pharmacist assistance from the Owner/Pharmacist; unknown medicine uses fallback. \textbf{Outcome:} bounded catalogue assistance; no order or prescription is created. Maps to FR-VA-01--10.\\
+UC-05\newline Edit demo record & \textbf{Actor:} signed-in user. \textbf{Trigger:} open a writable module and choose Add/Edit. \textbf{Flow:} supply required fields, save and view changed sample row. \textbf{Alternative:} analytics is read-only; missing fields produce feedback; absent record IDs do not update a different record. \textbf{Outcome:} only the current session payload changes. Maps to FR-DEMO-01--03.\\
+\end{longtable}
+
+\clearpage
+\section{Other Nonfunctional Requirements}
+\subsection{Performance Requirements}
+No load-test report, throughput measurement or production latency objective is present in the project. The implemented list pagination, database indexes and bounded assistant input/result counts are design controls, not proof of a particular capacity. Full-report generation loads the complete catalogue into memory, so its scalability requires measurement.
+
+\begin{longtable}{L{27mm}L{22mm}L{98mm}}
+\caption{Performance and capacity requirements}\\
+\toprule ID & State & Requirement and verification\\\midrule\endfirsthead
+\toprule ID & State & Requirement and verification\\\midrule\endhead
+\bottomrule\endfoot
+NFR-PER-01 & Implemented & The medicine list shall paginate at 20 records and use the configured search/sort fields. Verify page boundaries and filter retention in catalogue view tests.\\
+NFR-PER-02 & Implemented & The assistant shall bound message size, candidate processing and displayed results; ordinary matching examines at most 40 selected candidates and displays at most five. Verify boundary inputs and result cardinality.\\
+NFR-PER-03 & Proposed & For a separately agreed benchmark of 10 concurrent users and 10,000 catalogue records, target a 95th-percentile response time of at most 2 seconds for list, detail and text-chat requests on a documented reference host. Exclude external speech latency; record hardware, database and test data. This target is not a measured achievement.\\
+NFR-PER-04 & Proposed & Benchmark full report and CSV generation at the agreed catalogue size, with an initial target of completion within 10 seconds and no missing records. If memory grows beyond deployment limits, introduce streaming or pagination before increasing capacity claims.\\
+\end{longtable}
+
+\subsection{Security Requirements}
+\begin{longtable}{L{27mm}L{22mm}L{98mm}}
+\caption{Security requirements and limitations}\\
+\toprule ID & State & Requirement and verification\\\midrule\endfirsthead
+\toprule ID & State & Requirement and verification\\\midrule\endhead
+\bottomrule\endfoot
+NFR-SEC-01 & Implemented & Password verification shall use Django's password hashing/authentication functions, not plaintext comparisons. Stored credentials shall not be displayed in normal application responses. Verify backend usage and generic login failures.\\
+NFR-SEC-02 & Implemented & State-changing forms and chat POST requests shall use CSRF protection. Login-required views shall reject anonymous access. Verify missing-token and unauthenticated requests.\\
+NFR-SEC-03 & Implemented & Session cookies shall use configured HttpOnly and SameSite policies; unsafe next-page URLs shall not cause external redirects. Verify configuration and redirect tests.\\
+NFR-SEC-04 & Conditional & Non-debug deployment shall use an explicit secret key, allowed hosts, HTTPS and correctly configured proxy trust. Secure-cookie/HSTS options are present, but a deployment audit is required; default debug settings are not a production configuration.\\
+NFR-SEC-05 & Implemented & Catalogue CSV shall neutralize formula-like text, and chat messages shall be inserted with text-safe DOM operations. Report links shall match the expected local path. Verify malicious cell prefixes and an unexpected external report link.\\
+NFR-SEC-06 & Proposed & Define and enforce operation permissions for the combined Owner/Pharmacist actor, covering catalogue mutations and reports with positive and negative tests. Any future supplier/customer portal shall receive only its explicitly authorized access. A role field alone shall not be considered enforcement.\\
+NFR-SEC-07 & Proposed & Add login/chat abuse controls and a structured audit trail if production use is approved. Current login/status logging is not a complete, tamper-resistant business audit trail. Specify retention and access rules before implementation.\\
+\end{longtable}
+Customers using a staff-authenticated counter screen share that screen's existing access context. The current application is not a restricted public kiosk. A customer-only permission boundary would require additional design and verification.
+
+\subsection{Software Quality Attributes}
+\begin{longtable}{L{27mm}L{22mm}L{98mm}}
+\caption{Quality attributes and verifiable expectations}\\
+\toprule ID & State & Requirement and verification\\\midrule\endfirsthead
+\toprule ID & State & Requirement and verification\\\midrule\endhead
+\bottomrule\endfoot
+NFR-REL-01 & Implemented & Ordinary catalogue operations shall retain saved records across sessions and preserve inactive records. Verify create/edit/status persistence. Prototype rows shall remain explicitly session-scoped.\\
+NFR-REL-02 & Implemented & Assistant failures shall restore usable controls and preserve a retryable draft; late cancelled responses shall not reappear after clearing. Verify simulated denial, expiry, cancellation and unavailable-service paths.\\
+NFR-USA-01 & Implemented & Forms shall provide labels and validation feedback, lists shall distinguish empty states, and the assistant shall expose status messages and keyboard-operable controls. Verify keyboard paths and accessible names; no formal accessibility conformance claim is made.\\
+NFR-USA-02 & Conditional & Speech shall supplement text. Verify English/Hindi controls on the target browser and device, including unsupported input and unavailable voices. Installed voice quality and recognition accuracy are external dependencies.\\
+NFR-MAI-01 & Implemented & Accounts, medicines and core functions shall remain separated into Django applications; styling and behaviours shall reside in reusable templates/static assets. Verify module responsibilities and execute relevant regression suites after changes.\\
+NFR-SCA-01 & Proposed & Validate concurrent catalogue updates and PostgreSQL migration before claiming multi-user production scale. Multi-store tenancy, distributed workers and horizontal scaling are outside the established baseline.\\
+NFR-REC-01 & Proposed & Define and exercise a backup/restore procedure for users, catalogue and configuration before production adoption. Recovery time and permissible data loss must be agreed; neither is established by this repository.\\
+NFR-PRI-01 & Implemented / conditional & The application shall not deliberately persist voice audio or chat history, and it shall disclose possible online browser speech processing. Verify page-memory behaviour; provider retention and browser policies require separate review.\\
+\end{longtable}
+
+\subsection{Business Rules}
+\begin{enumerate}[label=BR-\arabic*.,leftmargin=19mm]
+\item A medicine is catalogue master data, not a batch or a stock balance. A record's existence must not be interpreted as availability for sale.
+\item Brand/name, strength and manufacturer together determine case-insensitive catalogue uniqueness after whitespace normalization.
+\item Catalogue records default to active; the ordinary list defaults to active records. Inactive records remain accessible through details, status filters and the complete report.
+\item The application medicine screens provide deactivation/reactivation rather than deletion. Django administration is a separate privileged interface and is not claimed to prohibit all deletion.
+\item Prescription flags reflect data entered into the catalogue. A false flag is reported cautiously and does not certify that a prescription is legally unnecessary.
+\item The voice assistant shall not create orders, prescribe medicines, determine treatment suitability or assert unrecorded prices and quantities.
+\item Operational sample records shall not be treated as accounting, inventory or customer-history evidence. A session expiration or logout may discard the session context.
+\item Only signed-in users can obtain application catalogue reports or use the assistant. Customer-facing wording does not create an anonymous access route.
+\item Report totals refer to catalogue records, including inactive records. Dashboard and report category definitions differ where blank categories exist.
+\item Data displayed in analytics is demonstrative. No revenue or profit claim may be derived from those predefined values as if calculated from transactions.
+\end{enumerate}
+
+\clearpage
+\section{Other Requirements}
+\subsection{Assumptions and Dependencies}
+\begin{itemize}
+\item The baseline represents one shared pharmacy catalogue. Multiple tenant isolation is neither modelled nor verified.
+\item Accounts are provisioned through authorized administration; public registration is not implemented. Django administration privileges for the combined Owner/Pharmacist actor must be configured independently of the stored role label.
+\item Users enter accurate catalogue and prescription-flag data. The system does not validate it against a national drug database or regulatory service.
+\item Speech requires a compatible browser, user permission and a suitable environment. Network availability may be required by the browser's provider; text assistance must remain usable without voice.
+\item SQLite is the local default. Production database selection, hosting, monitoring and backup arrangements remain decisions to be documented.
+\item The supplied reference determines section organization and visual style, not this project's features. Its university result-processing entities and technologies are not carried into \Project.
+\item Author names and roll numbers, department, institution and course details were supplied for this revision. Supervisor and submission date remain placeholders because these details were not supplied.
+\end{itemize}
+
+\subsection{Maintenance and Proposed Enhancements}
+Maintenance shall keep implementation status visible as the prototype evolves. Database changes require Django migrations and appropriate regression tests. Dependency changes should be tested against authentication, catalogue constraints, reporting and browser behaviour. Secrets and user credentials must not be embedded in documentation or source-controlled configuration.
+
+\begin{table}[H]
+\centering\small
+\caption{Future work, explicitly outside the implemented baseline}
+\begin{tabularx}{\textwidth}{L{18mm}L{40mm}Y}
+\toprule ID & Proposed capability & Required design before acceptance\\\midrule
+FUT-01 & Persistent inventory and batches & Batch identifiers, quantities, expiry and prices; validated stock movements and concurrency rules.\\
+FUT-02 & Transactional billing & Invoice lines, monetary calculation, payments, stock effects, returns and applicable business rules.\\
+FUT-03 & Supplier/customer domain records & Shared models, relationships, validation, access control and agreed retention.\\
+FUT-04 & Derived analytics & Defined metrics computed from validated transaction data rather than sample strings.\\
+FUT-05 & Access control / recovery & Explicit operation permissions and verified email-token password recovery.\\
+FUT-06 & Expanded assistant & Any generative model, wider language recognition or live-stock tool must have separately specified data access, cost, privacy and accuracy requirements. None is assumed here.\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Verification and Acceptance Mapping}
+Verification uses Django tests for server behaviour and Node.js tests that simulate frontend speech events. Simulation avoids collecting microphone audio; it does not establish live recognition quality. The following commands are the repeatable baseline checks:
+\begin{quote}\small\ttfamily
+py -3.13 manage.py test apps.core apps.accounts apps.medicines --noinput\\
+node tests/assistant.test.cjs
+\end{quote}
+
+\begin{table}[H]
+\centering\small
+\caption{Requirement-to-verification mapping}
+\begin{tabularx}{\textwidth}{L{39mm}L{49mm}Y}
+\toprule Requirement group & Evidence in repository & Additional acceptance work\\\midrule
+FR-AUTH; NFR-SEC-01--03 & Account login tests: credentials, expiry, redirects, logout and anonymous access. & Validate browser session-restoration expectations and production HTTPS configuration.\\
+FR-MED; FR-DASH & Medicine model/view tests: normalization, uniqueness, filters, pagination, state changes and counts. & Review real-world data entry, keyboard navigation and concurrent updates.\\
+FR-REP & Core report tests: counts, full rows, CSV escaping, authentication and empty catalogue. & Visually check pagination and output on target browser print/PDF destinations.\\
+FR-DEMO & Core module tests: sample-page rendering and customer add/edit/delete. & Verify remaining demo forms, visible export and intentional session isolation.\\
+FR-VA-01--05 & Core assistant tests: live catalogue queries, Hindi alias, medical-pattern routing, report intents and request validation. & Explore ambiguous queries and unsupported aliases; do not infer conversational intelligence.\\
+FR-VA-06--10 & Nine JavaScript tests: transcript review, fallback, denied access, close/clear cancellation, read-aloud, expiry and report-link checks. & Test microphone capture and audible English/Hindi output on the actual customer device.\\
+Proposed NFRs & No benchmark/deployment proof established. & Execute the agreed load, permissions, recovery and platform validation plans before claiming compliance.\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\textbf{Baseline verification note.} Both suites were re-executed on \BaselineDate: all 85 Django tests and all nine JavaScript tests passed. Django's system check reported no issues. The launcher also emitted a Python-location warning, but the test run completed successfully. Automated test results are bounded evidence and do not establish production readiness.
+
+\subsection{Reference Alignment and Document Control}
+This SRS retains every numbered chapter and subsection in the supplied reference: Introduction (1.1--1.3), Overall Description (2.1--2.5), System Features (3.1--3.2), Other Nonfunctional Requirements (4.1--4.4) and Other Requirements. Added third-level subsections organize project-specific detail without replacing that hierarchy. Section 5 is expanded to hold assumptions, future work, verification and sources.
+
+The reference's entire-workflow, user-class, data-flow and activity figure roles are replaced with \Project-specific diagrams. Its figure captioned ``Data Flow Diagram'' visually resembles a relational schema; this SRS distinguishes logical DFDs from the separately described actual data model. Extra UML diagram types are not included solely to increase length. The activity and sequence diagrams address the two principal interactions whose behaviour benefits from explicit ordering.
+
+The original A4 academic presentation is followed through serif body text, bold sans-serif numbered headings, a title page, contents with page references, numbered figures/tables and centered page numbers. Page count is determined by verified content rather than copying the reference's eleven-page length.
+
+\begin{table}[H]
+\centering\small
+\caption{Document revision record}
+\begin{tabularx}{\textwidth}{L{18mm}L{32mm}Y}
+\toprule Version & Date & Change\\\midrule
+1.0 & \BaselineDate & Initial implementation-grounded SRS using the approved reference structure. Includes catalogue reports and the signed-in bilingual voice assistant.\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Source References}
+Source identifiers below refer to the project working-tree files reviewed for this document. They identify evidence, not third-party product guarantees. File paths are relative to the project root; the supplied template is an external reference. The reference's project-specific statements are not authoritative for \Project.
+\begin{description}[style=nextline,leftmargin=12mm]
+\item[S01] \textbf{Reference SRS.} Supplied file \texttt{ryktphvctsxg.pdf}, ``Software Requirements Specification for IICT Website'', version 1.0, dated 24 August 2019, 11 pages. Used for chapter hierarchy and presentation only.
+\item[S02] \textbf{Configuration and dependency baseline.} \Source{requirements.txt}; \Source{config/settings.py}; \Source{config/urls.py}; \Source{config/wsgi.py}; \Source{config/asgi.py}; \Source{manage.py}; \Source{.env.example}; \Source{.claude/launch.json}.
+\item[S03] \textbf{Accounts.} \Source{apps/accounts/models.py}; \Source{apps/accounts/backends.py}; \Source{apps/accounts/forms.py}; \Source{apps/accounts/views.py}; \Source{apps/accounts/urls.py}; \Source{apps/accounts/admin.py}; initial account migration.
+\item[S04] \textbf{Medicine domain.} \Source{apps/medicines/models.py}; \Source{apps/medicines/forms.py}; \Source{apps/medicines/views.py}; \Source{apps/medicines/urls.py}; \Source{apps/medicines/admin.py}; initial medicine migration.
+\item[S05] \textbf{Dashboard and prototypes.} \Source{apps/core/views.py}; \Source{apps/core/urls.py}; \Source{templates/core/dashboard.html}; \Source{templates/core/module.html}; \Source{static/js/app.js}.
+\item[S06] \textbf{Catalogue report.} \Source{apps/core/catalogue_report.py}; report view in \Source{apps/core/views.py}; \Source{templates/core/catalogue_report.html}; \Source{static/css/catalogue_report.css}; \Source{static/js/catalogue_report.js}.
+\item[S07] \textbf{Assistant service and interface.} \Source{apps/core/assistant.py}; chat view in \Source{apps/core/views.py}; \Source{static/js/assistant.js}; \Source{templates/partials/_assistant.html}; \Source{docs/customer-assistant.md}.
+\item[S08] \textbf{Shared presentation.} \Source{templates/base.html}; \Source{templates/base_app.html}; \Source{templates/partials/_sidebar.html}; account and medicine templates; \Source{static/css/tokens.css}; \Source{static/css/base.css}; \Source{static/css/app.css}; \Source{static/css/assistant.css}.
+\item[S09] \textbf{Django verification sources.} \Source{apps/accounts/tests/test_login.py}; \Source{apps/medicines/tests/test_models.py}; \Source{apps/medicines/tests/test_views.py}; \Source{apps/core/tests.py}.
+\item[S10] \textbf{Frontend verification source.} \Source{tests/assistant.test.cjs}. Speech event tests use simulation, not live microphone capture.
+\end{description}
+
+\subsection{Terminology}
+\begin{description}[leftmargin=24mm,style=nextline]
+\item[Catalogue] Master medicine descriptions and flags; it does not represent physical stock.
+\item[Session] Authenticated browser interaction identified by a session cookie, with server-side data in Django's configured session store.
+\item[Prototype record] Sample operational data serialized in a session, without its own shared business-domain table.
+\item[DFD] Data Flow Diagram: logical processes, data stores, external participants and exchanged information.
+\item[ORM] Object-relational mapper used by Django to access the configured relational database.
+\item[CSRF] Cross-Site Request Forgery; Django's CSRF token/middleware checks protect unsafe requests.
+\item[Voice assistant] Bounded, rule-based catalogue assistance with optional browser speech recognition and synthesis.
+\item[Acceptance criterion] A specific observation used to determine whether a stated requirement is satisfied under defined conditions.
+\end{description}
+\end{document}
