@@ -1,0 +1,249 @@
+% BEGIN LEGEND
+\begin{table}[H]\centering\small
+\caption{Diagram colour legend}\label{tab:legend}
+\begin{tabularx}{\textwidth}{@{}YY@{}}
+\toprule Colour & Meaning\\\midrule
+\cellcolor{uiFill}Blue & Presentation and user interface\\
+\cellcolor{logicFill}Green & Application logic and processes\\
+\cellcolor{dataFill}Yellow & Data stores and database; key-rule notes\\
+\cellcolor{protoFill}Orange & Session-scoped prototype modules\\
+\cellcolor{boundaryFill}Red & External boundaries, errors and limitations\\
+\cellcolor{actorFill}Purple & Actors and users\\
+\cellcolor{noteFill}Grey & Explanatory notes and diagram boundaries\\
+\bottomrule\end{tabularx}
+\end{table}
+% END LEGEND
+% BEGIN PERMISSIONS
+\subsubsection{Users and Permissions}
+\begin{table}[H]\centering\small
+\caption{Users and permissions in the current baseline}\label{tab:permissions}
+\begin{tabularx}{\textwidth}{@{}L{56mm}YYY@{}}
+\toprule Resource / operation & Unauthenticated visitor & Owner/Pharmacist & Admin (staff / permissions)\\\midrule
+Medicine application screens & No & C/R/U/A & C/R/U/A\\
+Medicine deletion in application screens & No & No & No\\
+Catalogue report / CSV & No & R & R\\
+Voice/text assistant & No & Yes & Yes\\
+Writable prototype modules & No & C/R/U/D & C/R/U/D\\
+Analytics sample module & No & R & R\\
+Django admin & No & No\textsuperscript{1} & Yes\textsuperscript{2}\\
+Login with an active account & Yes & Yes & Yes\\
+\bottomrule\end{tabularx}
+\end{table}
+\textbf{Matrix notes.} C = create, R = read, U = update, D = delete, A = activate/deactivate. Prototype C/R/U/D changes only session data. Application medicine operations use C/R/U/A, not deletion. Anonymous page requests redirect to login; anonymous chat returns 401 unless CSRF rejects it first. Login availability does not imply public registration.
+
+\textsuperscript{1}The combined Owner/Pharmacist actor does not itself confer Django admin access. \textsuperscript{2}An active staff account may enter Django admin, but individual model operations depend on its assigned permissions; a superuser has framework-level privileges. Admin medicine deletion may be available with the appropriate permission and is not prohibited by the application-screen rule. Supplier/Customer participants have no independent login or portal. The stored \texttt{role} label is not an enforced authorization policy; NFR-SEC-06 remains Proposed.
+% END PERMISSIONS
+% BEGIN ER
+\begin{figure}[H]\centering
+\begin{tikzpicture}
+\node[classbox,fill=actorFill,draw=actorStroke,anchor=north] (user) at (-3.7,0) {
+\textbf{User : AbstractUser}\\\rule{60mm}{.4pt}\\
+username; password hash\\
+email: required, unique\\
+identity fields\\
+role: choice(20), default OWNER\\
+staff / superuser flags\\
+groups and permissions};
+\node[classbox,anchor=north] (medicine) at (3.7,0) {
+\textbf{Medicine}\\\rule{60mm}{.4pt}\\
+id: BigAutoField, primary key\\
+name: Char(200), required, indexed\\
+generic\_name: Char(200), optional\\
+strength: Char(50), optional\\
+category: Char(100), optional, indexed\\
+manufacturer: Char(150), optional\\
+unit: choice(20), default tablet\\
+prescription\_required: bool, false\\
+is\_active: bool, true\\
+created\_at; updated\_at\\[3pt]
+\textbf{Unique combination:}\\
+lower(name), lower(strength),\\
+lower(manufacturer)\\
+Whitespace normalized;\\
+composite active/name index};
+\node[classbox,fill=protoFill,draw=protoStroke,anchor=north] (session) at (-3.7,-6) {
+\textbf{Django Session (framework)}\\\rule{60mm}{.4pt}\\
+Logical contents: session identity,\\
+authentication state and expiry;\\
+serialized prototype\_modules\\
+inventory, billing, supplier,\\
+customer and analytics samples\\
+Physical field definitions: To verify\\
+against the framework schema};
+\draw[assoc,dashed] (user.south)--node[note,right,text width=28mm]{framework authentication context; not a domain foreign key}(session.north);
+\node[grey,text width=133mm,anchor=north] at (0,-11) {No User--Medicine foreign key, tenant ownership, invoice or batch entity is modelled in this baseline. Sessions hold prototype payloads, not shared operational domain tables.};
+\end{tikzpicture}
+\caption{Class/ER view of the real domain and framework session store. Session attributes are shown conceptually because the source SRS does not enumerate its physical schema.}\label{fig:er}
+\end{figure}
+% END ER
+% BEGIN CONSTRAINTS
+\subsubsection{Design and Implementation Constraints}
+\begin{itemize}
+\item \textbf{Framework/runtime:} retain the recorded Django monolith and Python 3.13 development family; the observed versions are Django 6.1 and Python 3.13.9. No additional API framework or frontend application is assumed.
+\item \textbf{Persistence:} SQLite is the default; PostgreSQL is configurable but its production deployment is not established. Operational demos stay session-scoped until a separate domain-model change is accepted.
+\item \textbf{Assistant:} classification uses explicit rules, aliases and catalogue queries, with no external LLM. Browser speech availability, language voices, permission and possible online processing constrain voice use.
+\item \textbf{Development evidence:} Windows is the evidenced host; other platforms and minimum hardware specifications are To verify.
+\item \textbf{Academic timeline:} delivery must fit the course schedule, but deadlines and milestones are To verify and are not invented here.
+\item \textbf{Tools/cost:} free/open-source development tools are the requested planning constraint; a complete dependency/licence inventory and any hosting or speech-provider charges are To verify. No zero-cost deployment claim is made.
+\end{itemize}
+% END CONSTRAINTS
+% BEGIN USECASE
+\subsubsection{Use-case diagram}
+\begin{figure}[H]\centering
+\begin{tikzpicture}
+\node[grey,fill=white,text width=75mm,minimum height=151mm,anchor=north] (system) at (2,1) {};
+\node[font=\sffamily\small\bfseries] at (2,.5) {PharmaFlowAI system boundary};
+\node[usecase] (login) at (2,-1) {Sign in / password-help guidance};
+\node[usecase] (med) at (2,-3.3) {Maintain and search catalogue; change status};
+\node[usecase] (report) at (2,-5.6) {View catalogue report; CSV / print};
+\node[usecase] (chat) at (2,-7.9) {Ask catalogue question; optional voice};
+\node[usecase,draw=protoStroke,fill=protoFill] (demo) at (2,-10.2) {Maintain session prototype records};
+\node[usecase] (admin) at (2,-12.5) {Django administration with staff / permissions};
+\node[actor,text width=30mm] (visitor) at (-4.5,-1) {Unauthenticated visitor};
+\node[actor,text width=30mm] (owner) at (-4.5,-5.6) {Owner/Pharmacist};
+\node[actor,text width=30mm] (participants) at (-4.5,-10.2) {Supplier / Customer\\Prototype participants};
+\draw[assoc] (visitor)--(login);
+\draw[assoc] (owner.east)--++(.65,0) |- (med.west);
+\draw[assoc] (owner)--(report);
+\draw[assoc] (owner.east)--++(.65,0) |- (chat.west);
+\draw[assoc] (owner.east)--++(.35,0) |- (admin.west);
+\draw[assoc] (owner.east)--++(.35,0) |- (demo.west);
+\draw[assoc,dashed] (participants)--node[note,above,text width=22mm]{represented through staff}(demo);
+\node[grey,text width=124mm] at (0,-15.5) {Supplier/Customer participation does not grant portal access. Customer questions use an authenticated assisted session. Administration is a capability of the combined actor, conditional on framework permissions.};
+\end{tikzpicture}
+\caption{Use cases and access boundary. The dashed prototype association denotes business participation, not direct system authorization.}\label{fig:usecase}
+\end{figure}
+% END USECASE
+% BEGIN STATES
+\subsubsection{State behaviour}
+\begin{figure}[H]\centering
+\begin{tikzpicture}
+\node[process,text width=33mm] (active) at (-3.8,0) {Active\\Default for a new medicine};
+\node[grey,text width=33mm] (inactive) at (3.8,0) {Inactive\\Record retained};
+\draw[flow] (active.north)--++(0,1.1)-|node[note,pos=.25,above]{POST status change: deactivate}(inactive.north);
+\draw[flow] (inactive.south)--++(0,-1.1)-|node[note,pos=.25,below]{POST status change: reactivate}(active.south);
+\node[store,text width=118mm] at (0,-3.3) {Both states preserve the record and remain available to details and the complete report. GET does not change state; normal medicine screens provide no delete action.};
+\end{tikzpicture}
+\caption{Medicine state diagram. POST status actions update the flag and timestamp without deleting the record.}\label{fig:medicine-state}
+\end{figure}
+\begin{figure}[H]\centering
+\begin{tikzpicture}
+\node[ui] (idle) at (-4.7,0) {Idle};
+\node[ui] (listen) at (0,0) {Listening};
+\node[ui] (review) at (4.7,0) {Transcript review / editable draft};
+\node[process] (sending) at (4.7,-3.4) {Sending};
+\node[process] (reply) at (0,-3.4) {Reply};
+\node[boundary] (error) at (-4.7,-3.4) {Error / Timeout};
+\draw[flow] (idle)--node[note,above]{start microphone}(listen);
+\draw[flow] (listen)--node[note,above]{recognized text}(review);
+\draw[flow] (idle.north)--++(0,1.1)-|node[note,pos=.25,above]{typed question}(review.north);
+\draw[flow] (review)--node[note,right]{explicit Send}(sending);
+\draw[flow] (sending)--node[note,above]{valid response}(reply);
+\draw[flow] (reply.north)--++(0,.8)--++(2.4,0)|-node[note,pos=.75,right]{next question}(review.west);
+\draw[flow] (sending.south)--++(0,-1.1)-|node[note,pos=.25,below]{failure / 15-second timeout}(error.south);
+\draw[flow] (listen.south)--++(0,-1.05)-|node[note,pos=.25,above]{denied / recognition error}(error.north);
+\draw[flow] (error.west)--++(-.65,0) |-node[note,pos=.25,left]{type / retry}(idle.west);
+\node[grey,text width=133mm] at (0,-6.2) {Clear/close cancels listening, pending requests and playback, returning to Idle; late responses are ignored. Failures preserve a retryable draft. Reply playback is opt-in. These transitions are a conceptual view of existing UI behaviour, not new persisted states.};
+\end{tikzpicture}
+\caption{Assistant request states. Typed input bypasses Listening; recognition never sends automatically.}\label{fig:assistant-state}
+\end{figure}
+% END STATES
+% BEGIN ACCEPTANCE
+\subsubsection{Acceptance Criteria for the Current Baseline}
+The following acceptance checklist defines completion of the current catalogue-and-assistance scope, not a transactional pharmacy system. Historical automated results are recorded in Section 5.3; remaining manual/environment checks stay To verify.
+\begin{enumerate}
+\item Valid username/email login creates the selected session policy; invalid/inactive credentials fail; protected pages and chat reject anonymous access.
+\item Medicine creation, reading, editing and deactivation/reactivation persist correctly. Name validation and normalized duplicate constraints hold; application deletion is not part of catalogue CRUD here.
+\item Search, status/category filters, supported ordering, 20-record pagination and dashboard counts agree with known fixture data.
+\item The complete report includes active/inactive records, correct summaries and every CSV row with formula-neutralization. Target-browser print layout is manually checked.
+\item English/Hindi catalogue lookup, report intent and medical-pattern fallback behave as specified; reviewed text is sent explicitly and optional voice retains text fallback.
+\item Both recorded test commands complete with zero failures. The preserved baseline evidence is 85 Django and 9 JavaScript tests passed on 12 October 2026; this revision does not assert a new run.
+\item Prototype modules remain labeled and session-scoped, analytics stays read-only, and no sample figure is represented as a real transaction or inventory balance.
+\end{enumerate}
+\textbf{Validation acceptance target (To verify).} Across an agreed fixture matrix, reject 100 percent of blank/whitespace-only names and normalized duplicate name/strength/manufacturer combinations; accept distinct strength/manufacturer combinations. Duplicate tests exist in the baseline, but exhaustive coverage and this explicit percentage target have not been measured.
+
+\subsubsection{Known Limitations}
+\begin{itemize}
+\item No completed billing transactions, payment/tax processing, stock deduction or persistent inventory/batch records.
+\item No verified availability, price management, expiry calculation or clinical treatment decision support.
+\item No generative AI, persistent conversation history or unrestricted Hindi transliteration; medical routing is pattern-based and non-exhaustive.
+\item No supplier/customer portals, enforced permissions derived solely from the stored role label, or email password recovery.
+\item No demonstrated production PostgreSQL deployment, load capacity, backup/restore objective or cross-platform certification.
+\item Prototype exports lack the catalogue CSV's explicit formula-neutralization. Full reports load the catalogue into memory; speech services and browser print output require environment-specific verification.
+\end{itemize}
+
+\subsubsection{Key Features Summary}
+\SummaryBox{Implemented: login, medicine catalogue/search, catalogue report/CSV/print and bounded bilingual assistance. Prototype: session operational records and sample analytics. Proposed/To verify: production hardening, persistent operations, scale and environment-specific acceptance.}
+% END ACCEPTANCE
+% BEGIN PHASES
+\subsubsection{Delivery Phases (Proposed planning sequence)}
+No delivery dates or additional completion claims are established. Each phase below is a Proposed plan; phase 1 reviews the already implemented baseline.
+\begin{enumerate}
+\item \Proposed{} baseline acceptance: validate the implemented catalogue/report/assistant and close outstanding device and permission checks.
+\item \Proposed{} persistent inventory: design shared supplier/customer records, batches, quantities, prices and expiry/stock rules (FUT-01, FUT-03).
+\item \Proposed{} billing: add validated invoices, payment and stock effects only after inventory integrity is accepted (FUT-02).
+\item \Proposed{} analytics: derive agreed measures from validated transactions rather than sample strings (FUT-04).
+\item \Proposed{} expanded assistant: specify any additional language, live-stock or model integration, with separate data-access, privacy, accuracy and cost requirements (FUT-06).
+\end{enumerate}
+% END PHASES
+% BEGIN TRACE
+\subsubsection{Detailed requirement traceability}
+Each TC identifier below is an acceptance scenario, not a newly executed test or a one-to-one claim about a source test function. ``Passed in baseline'' is used only for scenarios supported by the original document's stated automated evidence. A requirement may be implemented while an additional acceptance scenario is still To verify. Django evidence refers to S09; simulated Node evidence refers to S10. Manual evidence means a planned check, not a completed observation.
+\begingroup\scriptsize\setlength{\tabcolsep}{2.5pt}
+\begin{longtable}{@{}L{9mm}L{26mm}L{41mm}L{29mm}L{20mm}L{21mm}@{}}
+\caption{Traceability: authentication, catalogue, reports and prototypes}\label{tab:trace-core}\\
+\toprule Test ID & Scenario & Expected result & Requirement IDs & Evidence & Status\\\midrule\endfirsthead
+\toprule Test ID & Scenario & Expected result & Requirement IDs & Evidence & Status\\\midrule\endhead
+\bottomrule\endfoot
+TC-01 & Login using supported credentials & Valid username/email establishes an authenticated session. & FR-AUTH-01 & Django test & Passed in baseline\\
+TC-02 & Invalid credentials & Generic error; no authenticated session. & FR-AUTH-02; NFR-SEC-01 & Django test & Passed in baseline\\
+TC-03 & Inactive account & Authentication denied. & FR-AUTH-02 & Django test (planned detail) & To verify\\
+TC-04 & Remember me policies & Configured age versus browser-close session semantics. & FR-AUTH-03 & Django test & Passed in baseline\\
+TC-05 & Local / external next URL & Local destination accepted; external redirect rejected. & FR-AUTH-06; NFR-SEC-03 & Django test & Passed in baseline\\
+TC-06 & Logout and protected access & Logout ends session; later protected requests require login. & FR-AUTH-04--05 & Django test & Passed in baseline\\
+TC-07 & Create, read, edit medicine & Valid values persist and details reflect the saved record. & FR-MED-01,03; NFR-REL-01 & Django test (planned detail) & To verify\\
+TC-08 & Required medicine name & Blank and whitespace-only names rejected in every agreed fixture. & FR-MED-01 & Django test (planned detail) & To verify\\
+TC-09 & Normalization and duplicates & Whitespace normalized; equivalent name/strength/manufacturer rejected. & FR-MED-02 & Django test & Passed in baseline\\
+TC-10 & Medicine status changes & Status toggles; record retained. & FR-MED-04 & Django test & Passed in baseline\\
+TC-11 & GET status / missing record & GET does not mutate; nonexistent detail/edit ID returns 404. & FR-MED-03--04 & Django test (planned detail) & To verify\\
+TC-12 & Search and filters & Matching fields and status/category select expected rows. & FR-MED-05 & Django test & Passed in baseline\\
+TC-13 & Pagination & 20-record page boundary and filter retention. & FR-MED-06; NFR-PER-01 & Django test & Passed in baseline\\
+TC-14 & Empty and no-match list & Initial creation prompt differs from a filtered no-match message. & FR-MED-07 & Manual & To verify\\
+TC-15 & Dashboard counts & Counts agree with Medicine records; sample values remain labeled. & FR-DASH-01--02 & Django test (counts); Manual (labels) & To verify\\
+TC-16 & Full / empty catalogue report & All rows and expected counts; empty dataset handled. & FR-REP-01--02 & Django test & Passed in baseline\\
+TC-17 & Authenticated CSV and escaping & Full CSV rows, proper field escaping; anonymous report access denied. & FR-REP-03; FR-AUTH-04 & Django test & Passed in baseline\\
+TC-18 & CSV formula prefixes & Formula-like text is neutralized for every agreed malicious fixture. & FR-REP-03; NFR-SEC-05 & Django test (planned detail) & To verify\\
+TC-19 & Print / save PDF & Navigation hidden; readable landscape A4 output on target browser. & FR-REP-04 & Manual & To verify\\
+TC-20 & Prototype rendering and customer mutations & Sample pages render; customer add/edit/delete changes session payload. & FR-DEMO-01--02 & Django test & Passed in baseline\\
+TC-21 & Other demos and session isolation & Remaining forms/export work; another session does not share mutations. & FR-DEMO-01--03 & Manual & To verify\\
+TC-22 & Read-only analytics & No add/edit controls or successful mutation; figures remain samples. & FR-DEMO-03 & Manual & To verify\\
+\end{longtable}\endgroup
+
+\begingroup\scriptsize\setlength{\tabcolsep}{2.5pt}
+\begin{longtable}{@{}L{9mm}L{26mm}L{41mm}L{29mm}L{20mm}L{21mm}@{}}
+\caption{Traceability: chatbot, voice and outstanding nonfunctional checks}\label{tab:trace-assistant}\\
+\toprule Test ID & Scenario & Expected result & Requirement IDs & Evidence & Status\\\midrule\endfirsthead
+\toprule Test ID & Scenario & Expected result & Requirement IDs & Evidence & Status\\\midrule\endhead
+\bottomrule\endfoot
+TC-23 & English catalogue lookup & Current catalogue data used for a recognized medicine query. & FR-VA-01--02 & Django test & Passed in baseline\\
+TC-24 & Supported Hindi alias & Supported Hindi query maps to the expected catalogue search. & FR-VA-05 & Django test & Passed in baseline\\
+TC-25 & Medical-pattern question & Bounded routing to pharmacist assistance; no treatment generated. & FR-VA-04 & Django test & Passed in baseline\\
+TC-26 & Catalogue report intent & Counts and local report link returned. & FR-VA-03 & Django test & Passed in baseline\\
+TC-27 & Request validation & Invalid request schema rejected rather than producing a successful reply. & FR-VA-01 & Django test & Passed in baseline\\
+TC-28 & Exact validation boundaries & Empty/501-character text, invalid language, malformed JSON and non-string message return 400. & FR-VA-01; NFR-PER-02 & Django test (planned detail) & To verify\\
+TC-29 & Anonymous chat with CSRF context & 401 when not rejected earlier by CSRF. & FR-AUTH-04; NFR-SEC-02 & Django test (planned detail) & To verify\\
+TC-30 & Missing CSRF token & Authenticated unsafe chat request rejected with 403. & NFR-SEC-02 & Django test (planned detail) & To verify\\
+TC-31 & Oversized chat body & Body above 8,192 bytes rejected with 413 when handled by the view. & FR-VA-01; NFR-PER-02 & Django test (planned detail) & To verify\\
+TC-32 & Transcript review & Recognition fills editable draft; no automatic chat request. & FR-VA-06 & Node test & Passed in baseline\\
+TC-33 & Unsupported / denied recognition & Listening releases and typing remains available. & FR-VA-08 & Node test & Passed in baseline\\
+TC-34 & Opt-in read-aloud & Playback follows opt-in controls and is cancellable. & FR-VA-07 & Node test & Passed in baseline\\
+TC-35 & Expired session & Failure handled with usable controls. & FR-VA-09; NFR-REL-02 & Node test & Passed in baseline\\
+TC-36 & Clear / close during request & Cancelled/late responses do not repopulate cleared chat. & FR-VA-09--10 & Node test & Passed in baseline\\
+TC-37 & Client timeout & Pending request aborted after configured 15 seconds; draft remains retryable. & FR-VA-09; NFR-REL-02 & Node test (planned detail) & To verify\\
+TC-38 & Untrusted report link & Unexpected external link is not accepted. & FR-VA-03; NFR-SEC-05 & Node test & Passed in baseline\\
+TC-39 & Live English/Hindi speech & Actual device captures speech and plays selected-language output when supported. & FR-VA-05--08; NFR-USA-02 & Manual & To verify\\
+TC-40 & Page-memory history cap & No restored chat after reload; at most 40 message elements retained. & FR-VA-10; NFR-PRI-01 & Manual & To verify\\
+TC-41 & Performance and report completeness & Proposed p95 targets and record completeness met under the specified benchmark. & NFR-PER-03--04 & Manual (k6 plan) & To verify\\
+TC-42 & Deployment, permissions and recovery & Agreed deployment checklist, operation matrix and backup/restore drill pass. & NFR-SEC-04,06--07; NFR-REC-01 & Manual & To verify\\
+\end{longtable}\endgroup
+% END TRACE
