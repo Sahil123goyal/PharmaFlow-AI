@@ -392,32 +392,46 @@ The context diagram treats browser speech services as an external dependency. Th
 {\hyphenpenalty=10000 \exhyphenpenalty=10000
 \begin{tikzpicture}
 \node[dfdcircle,text width=22mm,minimum size=29mm] (p1) at (0,0) {\textbf{1.0} Authenticate and manage session};
-\node[dfdcircle,text width=22mm,minimum size=29mm] (p2) at (0,-3.5) {\textbf{2.0} Maintain and query catalogue};
-\node[dfdcircle,text width=22mm,minimum size=29mm] (p3) at (0,-7.0) {\textbf{3.0} Summarize and export catalogue};
-\node[dfdcircle,text width=22mm,minimum size=29mm] (p4) at (0,-10.5) {\textbf{4.0} Classify text and build reply};
-\node[dfdcircle,text width=22mm,minimum size=29mm] (p5) at (0,-14.0) {\textbf{5.0} Edit prototype records};
+\node[dfdcircle,text width=22mm,minimum size=29mm] (p2) at (0,-3.9) {\textbf{2.0} Maintain and query catalogue};
+\node[dfdcircle,text width=22mm,minimum size=29mm] (p3) at (0,-7.8) {\textbf{3.0} Summarize and export catalogue};
+\node[dfdcircle,text width=22mm,minimum size=29mm] (p4) at (0,-11.7) {\textbf{4.0} Classify text and build reply};
+\node[dfdcircle,text width=22mm,minimum size=29mm] (p5) at (0,-15.6) {\textbf{5.0} Edit prototype records};
 \node[actor,text width=28mm] (a1) at (-6.4,0) {Owner/Pharmacist};
-\node[actor,text width=28mm] (a2) at (-6.4,-3.5) {Owner/Pharmacist};
-\node[actor,text width=28mm] (a3) at (-6.4,-7.0) {Owner/Pharmacist\\/ report reader};
-\node[actor,text width=28mm] (a4) at (-6.4,-10.5) {Owner/Pharmacist or assisted Customer};
-\node[actor,text width=28mm] (a5) at (-6.4,-14.0) {Owner/Pharmacist};
+\node[actor,text width=28mm] (a2) at (-6.4,-3.9) {Owner/Pharmacist};
+\node[actor,text width=28mm] (a3) at (-6.4,-7.8) {Owner/Pharmacist\\/ report reader};
+\node[actor,text width=28mm] (a4) at (-6.4,-11.7) {Owner/Pharmacist or assisted Customer};
+\node[actor,text width=28mm] (a5) at (-6.4,-15.6) {Owner/Pharmacist};
 \node[dfdstore,text width=26mm] (d1) at (6.4,0) {D1: User accounts and Django sessions};
-\node[dfdstore,text width=26mm] (d2) at (6.4,-3.5) {D2: Medicine records};
-\node[dfdstore,text width=26mm] (d3) at (6.4,-7.0) {D2: Medicine records (same store)};
-\node[dfdstore,text width=26mm] (d4) at (6.4,-10.5) {D2: Medicine records (same store)};
+\node[dfdstore,text width=26mm,minimum height=92mm] (d2) at (6.4,-7.8) {D2: Medicine records (shared by 2.0, 3.0 and 4.0)};
 \node[dfdstore,fill=protoFill,text width=26mm,path picture={\draw[protoStroke,line width=1pt]
       (path picture bounding box.north east)--(path picture bounding box.north west)
-      --(path picture bounding box.south west)--(path picture bounding box.south east);}] (d5) at (6.4,-14.0) {D1: Session prototype payload};
-\foreach \i/\request/\response/\query/\result in {
-1/{credentials,\\remember me}/{session /\\login result}/{account lookup,\\session write}/{account /\\session data},
-2/{search, filters,\\fields}/{matches,\\validation result}/{read, create,\\update status}/{medicine fields,\\saved state},
-3/{report /\\export request}/{counts, CSV,\\print view}/{all-record\\query}/{rows, status,\\categories},
-4/{reviewed text,\\language}/{reply, report\\link, fallback}/{active lookup\\/ summary}/{matches, flags,\\counts},
-5/{supplier/customer\\and demo edits}/{sample rows,\\demo export}/{read / write\\payload}/{current-session\\rows}}{
+      --(path picture bounding box.south west)--(path picture bounding box.south east);}] (d5) at (6.4,-15.6) {D1: Session prototype payload};
+% actor <-> process flows
+\foreach \i/\request/\response in {
+1/{credentials,\\remember me}/{session /\\login result},
+2/{search, filters,\\fields}/{matches,\\validation result},
+3/{report /\\export request}/{counts, CSV,\\print view},
+4/{reviewed text,\\language}/{reply, report\\link, fallback},
+5/{supplier/customer\\and demo edits}/{sample rows,\\demo export}}{
   \draw[flow] ([yshift=3mm]a\i.east)--node[above,note]{\request}(p\i.168);
-  \draw[flow] (p\i.192)--node[below,note]{\response}([yshift=-3mm]a\i.east);
-  \draw[flow] (p\i.12)--node[above,note]{\query}([yshift=3mm]d\i.west);
-  \draw[flow] ([yshift=-3mm]d\i.west)--node[below,note]{\result}(p\i.348);}
+  \draw[flow] (p\i.192)--node[below,note]{\response}([yshift=-3mm]a\i.east);}
+% process <-> data store flows
+\draw[flow] (p1.12)--node[above,note]{account lookup,\\session write}([yshift=3mm]d1.west);
+\draw[flow] ([yshift=-3mm]d1.west)--node[below,note]{account /\\session data}(p1.348);
+\draw[flow] (p2.12)--node[above,note]{read, create,\\update status}(d2.west |- p2.12);
+\draw[flow] (d2.west |- p2.348)--node[below,note]{medicine fields,\\saved state}(p2.348);
+\draw[flow] (p3.12)--node[above,note]{all-record\\query}(d2.west |- p3.12);
+\draw[flow] (d2.west |- p3.348)--node[below,note]{rows, status,\\categories}(p3.348);
+\draw[flow] (p4.12)--node[above,note]{active lookup\\/ summary}(d2.west |- p4.12);
+\draw[flow] (d2.west |- p4.348)--node[below,note]{matches, flags,\\counts}(p4.348);
+\draw[flow] (p5.12)--node[above,note]{read / write\\payload}([yshift=3mm]d5.west);
+\draw[flow] ([yshift=-3mm]d5.west)--node[below,note]{current-session\\rows}(p5.348);
+% process <-> process flows
+\draw[flow] (p1.south)--node[right,note,xshift=1mm]{authenticated\\session}(p2.north);
+\draw[flow] (p2.south)--node[right,note,xshift=1mm]{catalogue\\records}(p3.north);
+\draw[flow] (p4.north)--node[right,note,xshift=1mm]{report intent /\\link}(p3.south);
+% shared session store linking 1.0 and 5.0
+\draw[flow,dashed] (d1.east)--(8.4,0)--node[note,rotate=90,above]{session cookie / payload}(8.4,-15.6)--(d5.east);
 \end{tikzpicture}
 }
 \caption{DFD Level 1. Repeated actors and D2 symbols denote the same participant or store. D1 contains framework sessions and the prototype payload, not an operational ledger. Processes 2.0--5.0 require an authenticated session; speech conversion surrounds process 4.0 in the browser.}\label{fig:dfd1}
